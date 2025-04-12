@@ -1,7 +1,7 @@
 const prisma = require("../config/db");
 const bcrypt = require("bcryptjs");
 const sendEmail = require("../services/emailSender");
-const supabase = require("../services/supabaseClient");
+// const supabase = require("../services/supabaseClient");
 
 exports.sendPasswordResetEmail = async (req, res) => {
   try {
@@ -13,21 +13,21 @@ exports.sendPasswordResetEmail = async (req, res) => {
       return res.status(400).json({ message: "User Not Found." });
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(req.user.email);
+    // const { error } = await supabase.auth.resetPasswordForEmail(req.user.email);
 
-    if (error) {
-      return res.status(400).json({ message: error.message });
-    }
-
-    // const sendMail = await sendEmail(
-    //   req.user.email,
-    //   "Change of Password",
-    //   req.user.email
-    // );
-
-    // if (sendMail.error) {
-    //   return res.status(400).json({ message: sendMail.message });
+    // if (error) {
+    //   return res.status(400).json({ message: error.message });
     // }
+
+    const sendMail = await sendEmail(
+      req.user.email,
+      "Change of Password",
+      req.user.email
+    );
+
+    if (sendMail.error) {
+      return res.status(400).json({ message: sendMail.message });
+    }
 
     return res.status(200).json({
       status: true,
