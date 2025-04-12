@@ -6,7 +6,7 @@ const sendEmail = require("../services/emailSender");
 exports.sendPasswordResetEmail = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { email: req.user.email },
+      where: { email: req.body.email },
     });
 
     if (!user) {
@@ -20,9 +20,9 @@ exports.sendPasswordResetEmail = async (req, res) => {
     // }
 
     const sendMail = await sendEmail(
-      req.user.email,
+      req.body.email,
       "Change of Password",
-      req.user.email
+      req.body.email
     );
 
     if (sendMail.error) {
@@ -41,10 +41,10 @@ exports.sendPasswordResetEmail = async (req, res) => {
 
 exports.passwordReset = async (req, res) => {
   try {
-    const { password } = req.body;
+    const { email , password } = req.body;
 
     const user = await prisma.user.findUnique({
-      where: { email: req.user.email },
+      where: { email: email },
     });
 
     if (!user) {
@@ -59,7 +59,7 @@ exports.passwordReset = async (req, res) => {
 
     const updatePassword = await prisma.user.update({
       where: {
-        email: req.user.email,
+        email: email,
       },
       data: {
         password: hashedPassword,

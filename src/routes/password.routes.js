@@ -1,9 +1,12 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const authenticateToken = require("../middleware/authenticateToken");
-const { sendPasswordResetEmail, passwordReset } = require('../controllers/password.controller');
+const {
+  sendPasswordResetEmail,
+  passwordReset,
+} = require("../controllers/password.controller");
 
-router.get('/resetMail',authenticateToken , sendPasswordResetEmail);
-router.post('/reset', authenticateToken , passwordReset);
+router.post("/resetMail", sendPasswordResetEmail);
+router.post("/reset", passwordReset);
 
 module.exports = router;
