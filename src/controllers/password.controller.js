@@ -4,9 +4,11 @@ const sendEmail = require("../services/emailSender");
 // const supabase = require("../services/supabaseClient");
 
 exports.sendPasswordResetEmail = async (req, res) => {
+  const { email } = req.body;
+
   try {
     const user = await prisma.user.findUnique({
-      where: { email: req.body.email },
+      where: { email: email },
     });
 
     if (!user) {
@@ -20,9 +22,9 @@ exports.sendPasswordResetEmail = async (req, res) => {
     // }
 
     const sendMail = await sendEmail(
-      req.body.email,
+      email,
       "Change of Password",
-      req.body.email
+      email
     );
 
     if (sendMail.error) {
@@ -31,7 +33,7 @@ exports.sendPasswordResetEmail = async (req, res) => {
 
     return res.status(200).json({
       status: true,
-      message: `Password reset email sent to ${req.user.email}`,
+      message: `Password reset email sent to ${email}`,
     });
   } catch (error) {
     console.error(error);
@@ -41,7 +43,7 @@ exports.sendPasswordResetEmail = async (req, res) => {
 
 exports.passwordReset = async (req, res) => {
   try {
-    const { email , password } = req.body;
+    const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { email: email },
