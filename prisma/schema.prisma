@@ -26,13 +26,14 @@ model User {
   tiktok       String?
 
   events       Event[]
+  favorite     Favorite[]
 }
 
 model Ticket {
   id                 String   @id @default(uuid())
   eventId            String
   type               String?
-  price              Int?
+  price              String?
   quantity_available Int?
   created_at         DateTime @default(now())
 
@@ -49,24 +50,26 @@ model Event {
   address          String?
   location         String?
   country          String?
-  region           Json?
+  region           String?
   marker           Json?
   timezone         String?
-  start_date       DateTime?
-  start_time       DateTime?
-  end_date         DateTime?
-  end_time         DateTime?
+  start_date       String?
+  start_time       String?
+  end_date         String?
+  end_time         String?
   category         String?
   tags             Json?
   external_link    String?
   attendees_count  Int?
   max_attendees    Int?
   is_online        Boolean?
+  visibility       Boolean?
   age_limit        String?
   parking          Boolean?
   language         String?
   ticket_categories Json?
-  price            Decimal?   @db.Decimal(10, 2)
+  price            String?
+  ticket_status    Boolean?
   event_type       String?
   event_privacy    String?
   accessibility    Json?
@@ -75,6 +78,18 @@ model Event {
 
   user             User    @relation(fields: [user_id], references: [id])
   tickets          Ticket[]
+  favorite         Favorite[]
+}
+
+
+model Favorite {
+  id         String   @id @default(uuid())
+  user_id    String
+  event_id   String
+  created_at DateTime @default(now())
+
+  user  User  @relation(fields: [user_id], references: [id])
+  event Event @relation(fields: [event_id], references: [id])
 }
 
 
