@@ -80,6 +80,7 @@ exports.login = async (req, res) => {
       status: true,
       message: "Login successful",
       token: token,
+      user:user
     });
   } catch (error) {
     console.error(error);
