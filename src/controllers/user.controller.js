@@ -1,6 +1,6 @@
 const prisma = require("../config/db");
 const sendEmail = require("../services/emailSender");
-
+const sanitizeUser = require('../services/sanitizerUser');
 exports.updateUserEmailSend = async (req, res) => {
     try {
         const user = await prisma.user.findUnique({
@@ -74,7 +74,7 @@ exports.updateEmail = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: "Email Change Successfull",
-            data: updatedUser,
+            data: sanitizeUser(updatedUser),
         });
     } catch (error) {
         console.error(error);
@@ -92,7 +92,7 @@ exports.getUser = async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            data: user,
+            data: sanitizeUser(user),
         });
     } catch (error) {
         console.error(error);
@@ -175,7 +175,7 @@ exports.updateUser = async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            data: updateUser,
+            data: sanitizeUser(updateUser),
         });
     } catch (error) {
         console.error(error);
@@ -196,7 +196,7 @@ exports.getUserByToken = async (req, res) => {
 
         res.status(200).json({
             status : true,
-            user : user,
+            user : sanitizeUser(user),
         });
 
     } catch (e) {
