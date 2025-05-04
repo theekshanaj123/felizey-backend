@@ -190,32 +190,16 @@ exports.getUserByToken = async (req, res) => {
 
         const user = await prisma.user.findUnique({where: {email: email}});
 
-        if (!user) {
+        if(!user){
             return res.status(400).json({message: "User Not Found."});
         }
 
         res.status(200).json({
-            status: true,
-            user: {
-                id: user?.id,
-                firstName: user?.firstName,
-                lastName: user?.lastName,
-                role: user?.role,
-                created_at: user?.created_at,
-                avatar_url: user?.avatar_url,
-                email: user?.email,
-                verified: user?.verified,
-                phoneNumber: user?.phoneNumber,
-                bio: user?.bio,
-                isPrimium: user?.isPrimium,
-                country: user?.country,
-                instagram: user?.instagram,
-                tiktok: user?.tiktok,
-            }
+            status : true,
+            user : user,
         });
 
-    } catch
-        (e) {
+    } catch (e) {
         console.error(error);
         return res.status(400).json({message: error.message});
     }
