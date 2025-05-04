@@ -33,9 +33,18 @@ exports.register = async (req, res) => {
       },
     });
 
+    const token = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+    );
+
     return res.status(201).json({
       message: "User created",
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email , token : token },
     });
   } catch (error) {
     console.error(error);

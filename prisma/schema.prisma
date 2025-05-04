@@ -3,30 +3,33 @@ generator client {
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id           String   @id @default(cuid())
-  firstName    String
-  lastName     String?
-  role         String?
-  created_at   DateTime @default(now())
-  avatar_url   String?
-  email        String   @unique
-  password     String
-  verified     Boolean  @default(false)
-  phoneNumber  String?
-  bio          String?
-  isPrimium    Boolean  @default(false)
-  country      String?
-  instagram    String?
-  tiktok       String?
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String?
+  role        String?
+  created_at  DateTime @default(now())
+  avatar_url  String?
+  email       String   @unique
+  password    String
+  verified    Boolean  @default(false)
+  phoneNumber String?
+  bio         String?
+  isPrimium   Boolean  @default(false)
+  country     String?
+  instagram   String?
+  tiktok      String?
 
-  events       Event[]
-  favorite     Favorite[]
+  events   Event[]
+  favorite Favorite[]
+  Order    Order[]
+
+  Order_Item Order_Item[]
 }
 
 model Ticket {
@@ -37,50 +40,51 @@ model Ticket {
   quantity_available Int?
   created_at         DateTime @default(now())
 
-  event              Event    @relation(fields: [eventId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  Order_Item Order_Item[]
 }
 
 model Event {
-  id               String    @id @default(uuid())
-  user_id          String
-  title            String?
-  description      String?
-  image_url        String?
-  banner_video_url String?
-  address          String?
-  location         String?
-  country          String?
-  region           String?
-  marker           Json?
-  timezone         String?
-  start_date       String?
-  start_time       String?
-  end_date         String?
-  end_time         String?
-  category         String?
-  tags             Json?
-  external_link    String?
-  attendees_count  Int?
-  max_attendees    Int?
-  is_online        Boolean?
-  visibility       Boolean?
-  age_limit        String?
-  parking          Boolean?
-  language         String?
+  id                String   @id @default(uuid())
+  user_id           String
+  title             String?
+  description       String?
+  image_url         String?
+  banner_video_url  String?
+  address           String?
+  location          String?
+  country           String?
+  region            String?
+  marker            Json?
+  timezone          String?
+  start_date        String?
+  start_time        String?
+  end_date          String?
+  end_time          String?
+  category          String?
+  tags              Json?
+  external_link     String?
+  attendees_count   Int?
+  max_attendees     Int?
+  is_online         Boolean?
+  visibility        Boolean?
+  age_limit         String?
+  parking           Boolean?
+  language          String?
   ticket_categories Json?
-  price            String?
-  ticket_status    Boolean?
-  event_type       String?
-  event_privacy    String?
-  accessibility    Json?
-  view_count       Int?
-  created_at       DateTime  @default(now())
+  price             String?
+  ticket_status     Boolean?
+  event_type        String?
+  event_privacy     String?
+  accessibility     Json?
+  view_count        Int?
+  created_at        DateTime @default(now())
 
-  user             User    @relation(fields: [user_id], references: [id])
-  tickets          Ticket[]
-  favorite         Favorite[]
+  user     User       @relation(fields: [user_id], references: [id])
+  tickets  Ticket[]
+  favorite Favorite[]
 }
-
 
 model Favorite {
   id         String   @id @default(uuid())
@@ -92,5 +96,30 @@ model Favorite {
   event Event @relation(fields: [event_id], references: [id])
 }
 
+model Order {
+  id           String   @id @default(uuid())
+  user_id      String
+  total_amount Int
+  status       String
+  categories   String
+  created_at   DateTime @default(now())
 
+  user User @relation(fields: [user_id], references: [id])
 
+  Order_Item Order_Item[]
+}
+
+model Order_Item {
+  id         String   @id @default(uuid())
+  user_id    String
+  ticket_id  String
+  order_id   String
+  price_each Int
+  currency   String
+  qr         String
+  created_at DateTime @default(now())
+
+  user   User   @relation(fields: [user_id], references: [id])
+  ticket Ticket @relation(fields: [ticket_id], references: [id])
+  order  Order  @relation(fields: [order_id], references: [id])
+}
