@@ -404,7 +404,6 @@ exports.fetchEventsByCategory = async (req, res) => {
             return res.status(400).json({message: "Category is required."});
         }
 
-        const now = new Date();
 
         const events = await prisma.event.findMany({
             where: {
@@ -412,13 +411,7 @@ exports.fetchEventsByCategory = async (req, res) => {
                     equals: category,
                     mode: "insensitive",
                 },
-                end_date: {
-                    equals: now,
-                },
-                end_time: {
-                    gte: now.toTimeString().slice(0, 5), // Compare time if same day
-                },
-                isVisible: true,
+                visibility: true,
             },
         });
 
@@ -435,11 +428,9 @@ exports.fetchEventsByCategory = async (req, res) => {
 exports.fetchRandomizedEvents = async (req, res) => {
     try {
 
-        const now = new Date();
-
         const events = await prisma.event.findMany({
             where: {
-                isVisible: true,
+                visibility: true,
             }
         });
 
@@ -476,7 +467,7 @@ exports.fetchEventsAdvanced = async (req, res) => {
             filters.country = {equals: country, mode: "insensitive"};
         }
 
-        filters.isVisible = true;
+        filters.visibility = true;
 
         const events = await prisma.event.findMany({
             where: filters,
