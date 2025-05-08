@@ -22,6 +22,12 @@ exports.checkEvent = async (req, res) => {
         continue;
       }
 
+      console.log(`Event ID: ${event.id}`);
+      console.log(`Parsed end time: ${eventEndDateTime}`);
+      console.log(`Is valid date? ${isValid(eventEndDateTime)}`);
+      console.log(`Now: ${new Date()}`);
+      console.log(`Is now > end time? ${new Date() > eventEndDateTime}`);
+
       if (new Date() > eventEndDateTime) {
         await prisma.event.update({
           where: { id: event.id },
