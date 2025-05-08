@@ -19,6 +19,7 @@ app.use("/api/favorite", favoriteRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/ticket", ticketRoutes);
+app.use("/api/cron", ticketRoutes);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
