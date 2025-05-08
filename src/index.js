@@ -8,6 +8,7 @@ const favoriteRoutes = require("./routes/favorite.routes");
 const uploadRoutes = require("./routes/upload.routes");
 const paymentRoutes = require("./routes/order.routes");
 const ticketRoutes = require("./routes/ticket.routes");
+const cronRoutes = require("./routes/cron.routes");
 require("dotenv").config();
 
 app.use(express.json());
@@ -19,7 +20,7 @@ app.use("/api/favorite", favoriteRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/ticket", ticketRoutes);
-app.use("/api/cron", ticketRoutes);
+app.use("/api/cron", cronRoutes);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
