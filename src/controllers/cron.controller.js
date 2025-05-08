@@ -1,7 +1,6 @@
+const { format, parse, isValid } = require("date-fns");
 const prisma = require("../config/db");
-import { format, parse, isValid } from 'date-fns';
-
-exports.checkEvent = async () => {
+exports.checkEvent = async (req, res) => {
   try {
     const now = new Date();
     console.log("Cron endpoint triggered at:", now);
