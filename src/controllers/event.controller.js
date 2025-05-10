@@ -28,7 +28,7 @@ exports.createEvent = async (req, res) => {
             parking,
             language,
             ticket_categories,
-            price,
+            // price,
             ticket_status,
             event_type,
             event_privacy,
@@ -76,10 +76,10 @@ exports.createEvent = async (req, res) => {
         // if (!tags) return res.status(400).json({ message: "Tags are required." });
         // if (!external_link)
         //   return res.status(400).json({ message: "External link is required." });
-        if (attendees_count === undefined)
-            return res.status(400).json({message: "Attendees count is required."});
-        if (max_attendees === undefined)
-            return res.status(400).json({message: "Max attendees is required."});
+        // if (attendees_count === undefined)
+        //     return res.status(400).json({message: "Attendees count is required."});
+        // if (max_attendees === undefined)
+        //     return res.status(400).json({message: "Max attendees is required."});
         if (is_online === undefined)
             return res.status(400).json({message: "Online status is required."});
         if (visibility === undefined)
@@ -488,21 +488,19 @@ exports.fetchEventsAdvanced = async (req, res) => {
     }
 };
 
-exports.fetchEventsByUser = async (req, res) => {
-    try {
-        const {userId} = req.params;
 
-        if (!userId) {
-            return res.status(400).json({message: "User ID is required."});
+exports.fetchEventsById = async (req, res) => {
+    try {
+        const {eventId} = req.params;
+
+        if (!eventId) {
+            return res.status(400).json({message: "Event ID is required."});
         }
 
         const events = await prisma.event.findMany({
             where: {
-                user_id: userId,
-            },
-            orderBy: {
-                created_at: 'desc',
-            },
+                id: eventId,
+            }
         });
 
         return res.status(200).json({
@@ -514,4 +512,3 @@ exports.fetchEventsByUser = async (req, res) => {
         return res.status(500).json({message: error.message});
     }
 };
-  

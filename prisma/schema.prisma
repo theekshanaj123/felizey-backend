@@ -30,6 +30,8 @@ model User {
   Order    Order[]
 
   Order_Item Order_Item[]
+
+  User_View_Count User_View_Count[]
 }
 
 model Ticket {
@@ -71,9 +73,9 @@ model Event {
   visibility        Boolean?
   age_limit         String?
   parking           Boolean?
-  language          String?
+  language          Json?
   ticket_categories Json?
-  price             String?
+  // price             String?
   ticket_status     Boolean?
   event_type        String?
   event_privacy     String?
@@ -84,6 +86,8 @@ model Event {
   user     User       @relation(fields: [user_id], references: [id])
   tickets  Ticket[]
   favorite Favorite[]
+
+  User_View_Count User_View_Count[]
 }
 
 model Favorite {
@@ -122,4 +126,13 @@ model Order_Item {
   user   User   @relation(fields: [user_id], references: [id])
   ticket Ticket @relation(fields: [ticket_id], references: [id])
   order  Order  @relation(fields: [order_id], references: [id])
+}
+
+model User_View_Count {
+  id       String @id @default(uuid())
+  user_id  String
+  event_id String
+
+  user  User  @relation(fields: [user_id], references: [id])
+  event Event @relation(fields: [event_id], references: [id])
 }
