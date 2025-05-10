@@ -523,7 +523,7 @@ exports.fetchEventsById = async (req, res) => {
             return res.status(400).json({message: "Event ID is required."});
         }
 
-        const events = await prisma.event.findMany({
+        const events = await prisma.event.findUnique({
             where: {
                 id: eventId,
             }
