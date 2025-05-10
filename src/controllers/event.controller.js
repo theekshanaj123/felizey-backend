@@ -488,6 +488,32 @@ exports.fetchEventsAdvanced = async (req, res) => {
     }
 };
 
+exports.fetchEventsByUser = async (req, res) => {
+    try {
+        const {userId} = req.params;
+
+        if (!userId) {
+            return res.status(400).json({message: "User ID is required."});
+        }
+
+        const events = await prisma.event.findMany({
+            where: {
+                user_id: userId,
+            },
+            orderBy: {
+                created_at: 'desc',
+            },
+        });
+
+        return res.status(200).json({
+            status: true,
+            data: events,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({message: error.message});
+    }
+};
 
 exports.fetchEventsById = async (req, res) => {
     try {
