@@ -529,7 +529,7 @@ exports.fetchEventsById = async (req, res) => {
             }
         });
 
-        const isUserView = await prisma.user_View_Count.findUnique({
+        const isUserView = await prisma.user_View_Count.findFirst({
             where: {
                 event_id: eventId,
                 user_id: req.user.id,
@@ -537,7 +537,7 @@ exports.fetchEventsById = async (req, res) => {
         });
 
         if (!isUserView) {
-            prisma.user_View_Count.create({
+            await prisma.user_View_Count.create({
                 data: {
                     user: {
                         connect: {
