@@ -532,7 +532,7 @@ exports.fetchEventsById = async (req, res) => {
         const isUserView = await prisma.user_View_Count.findUnique({
             where: {
                 event_id: eventId,
-                user_id: req.user.email,
+                user_id: req.user.id,
             }
         });
 
