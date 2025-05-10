@@ -456,7 +456,7 @@ exports.fetchEventsAdvanced = async (req, res) => {
         const filters = {};
 
         if (title) {
-            filters.title = {equals: title, mode: "insensitive"};
+            filters.title = {contains: title, mode: "insensitive"};
         }
 
         if (category) {
@@ -474,13 +474,28 @@ exports.fetchEventsAdvanced = async (req, res) => {
             orderBy: {
                 created_at: "desc",
             },
-            take: 5,
-            skip: parseInt(skip),
+            // take: 5,
+            // skip: parseInt(skip),
+        });
+
+        const users = await prisma.user.findMany({
+            where: {
+                OR: [
+                    {firstName: {contains: title, mode: "insensitive"}},
+                    {lastName: {contains: title, mode: "insensitive"}}
+                ]
+            },
+            orderBy: {
+                created_at: "desc",
+            },
         });
 
         return res.status(200).json({
             status: true,
-            data: events,
+            data: {
+                event: events,
+                user: users
+            },
         });
     } catch (error) {
         console.error(error);
