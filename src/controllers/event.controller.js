@@ -529,6 +529,30 @@ exports.fetchEventsById = async (req, res) => {
             }
         });
 
+        const isUserView = await prisma.user_View_Count.findUnique({
+            where: {
+                event_id: eventId,
+                user_id: req.user.email,
+            }
+        });
+
+        if (!isUserView) {
+            prisma.user_View_Count.create({
+                data: {
+                    user: {
+                        connect: {
+                            id: req.user.id
+                        }
+                    },
+                    event: {
+                        connect: {
+                            id: eventId
+                        }
+                    }
+                }
+            })
+        }
+
         return res.status(200).json({
             status: true,
             data: events,
