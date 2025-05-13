@@ -577,3 +577,21 @@ exports.fetchEventsById = async (req, res) => {
         return res.status(500).json({message: error.message});
     }
 };
+
+exports.fetchAllEvents = async (req, res) => {
+    try {
+
+        const events = await prisma.event.findMany();
+
+        return res.status(200).json({
+            status: true,
+            message: "Success",
+            data: events,
+        })
+
+    } catch (e) {
+        return res.status(500).json({
+            error: e?.message,
+        });
+    }
+}
