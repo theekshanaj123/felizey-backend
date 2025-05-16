@@ -595,3 +595,26 @@ exports.fetchAllEvents = async (req, res) => {
         });
     }
 }
+
+exports.fetchLetestEvents = async (req, res) => {
+    try {
+
+        const events = await prisma.event.findMany({
+            orderBy: {
+                created_at: 'desc',
+            }
+        })
+
+        return res.status(200).json({
+            status: true,
+            message: "Success",
+            data: events
+        })
+
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({
+            message: e.message
+        });
+    }
+};

@@ -16,7 +16,7 @@ model User {
   created_at  DateTime @default(now())
   avatar_url  String?
   email       String   @unique
-  password    String
+  password    String?
   verified    Boolean  @default(false)
   phoneNumber String?
   bio         String?
@@ -32,6 +32,8 @@ model User {
   Order_Item Order_Item[]
 
   User_View_Count User_View_Count[]
+
+  Google_Login Google_Login[]
 }
 
 model Ticket {
@@ -135,4 +137,16 @@ model User_View_Count {
 
   user  User  @relation(fields: [user_id], references: [id])
   event Event @relation(fields: [event_id], references: [id])
+}
+
+model Google_Login {
+  id        String @id @default(uuid())
+  googleId  String
+  user_id   String
+  email     String @unique
+  givenName String
+  name      String
+  photo     String
+
+  user User @relation(fields: [user_id], references: [id])
 }
