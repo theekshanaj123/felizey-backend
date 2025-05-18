@@ -44,67 +44,33 @@ exports.createEvent = async (req, res) => {
             return res.status(400).json({message: "User Not Found."});
         }
 
-        if (!title) return res.status(400).json({message: "Title is required."});
-        if (!description)
-            return res.status(400).json({message: "Description is required."});
-        if (!image_url)
-            return res.status(400).json({message: "Image URL is required."});
-        // if (!banner_video_url)
-        //   return res.status(400).json({ message: "Banner video URL is required." });
-        if (!address)
-            return res.status(400).json({message: "Address is required."});
-        // if (!location)
-        //   return res.status(400).json({ message: "Location is required." });
-        if (!country)
-            return res.status(400).json({message: "Country is required."});
-        if (!region)
-            return res.status(400).json({message: "Region is required."});
-        if (!marker)
-            return res.status(400).json({message: "Marker is required."});
-        if (!timezone)
-            return res.status(400).json({message: "Timezone is required."});
-        if (!start_date)
-            return res.status(400).json({message: "Start date is required."});
-        if (!start_time)
-            return res.status(400).json({message: "Start time is required."});
-        if (!end_date)
-            return res.status(400).json({message: "End date is required."});
-        if (!end_time)
-            return res.status(400).json({message: "End time is required."});
-        if (!category)
-            return res.status(400).json({message: "Category is required."});
-        // if (!tags) return res.status(400).json({ message: "Tags are required." });
-        // if (!external_link)
-        //   return res.status(400).json({ message: "External link is required." });
-        // if (attendees_count === undefined)
-        //     return res.status(400).json({message: "Attendees count is required."});
-        // if (max_attendees === undefined)
-        //     return res.status(400).json({message: "Max attendees is required."});
-        if (is_online === undefined)
-            return res.status(400).json({message: "Online status is required."});
-        if (visibility === undefined)
-            return res.status(400).json({message: "Visibility is required."});
-        if (!age_limit)
-            return res.status(400).json({message: "Age limit is required."});
-        if (parking === undefined)
-            return res.status(400).json({message: "Parking info is required."});
-        if (!language)
-            return res.status(400).json({message: "Language is required."});
-        if (!ticket_categories || ticket_categories.length === 0)
-            return res
-                .status(400)
-                .json({message: "At least one ticket category is required."});
-        // if (!price) return res.status(400).json({ message: "Price is required." });
-        if (ticket_status === undefined)
-            return res.status(400).json({message: "Ticket status is required."});
-        if (!event_type)
-            return res.status(400).json({message: "Event type is required."});
-        if (!event_privacy)
-            return res.status(400).json({message: "Event privacy is required."});
-        // if (!accessibility)
-        //   return res.status(400).json({ message: "Accessibility is required." });
-        if (view_count === undefined)
-            return res.status(400).json({message: "View count is required."});
+        const requiredFields = [
+            "title",
+            "description",
+            "image_url",
+            "start_date",
+            "start_time",
+            "end_date",
+            "end_time",
+            "category",
+            "location",
+            "country",
+            "timezone",
+            "is_online",
+            "visibility",
+            "event_type",
+            "event_privacy",
+            "accessibility",
+            "ticket_status"
+        ];
+
+        for (const field of requiredFields) {
+            if(req.body[field] === undefined || req.body[field] === null || req.body[field] === ""){
+                return res.status(500).json({
+                   message:`${field} is requird.`
+                });
+            }
+        }
 
         const userId = user.id;
 
