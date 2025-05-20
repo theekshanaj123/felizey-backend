@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
 export const checkEndedEvents = async () => {
     try {
         const start = new Date();
-        console.log('Cron job started at:', start);
 
         let hiddenCount = 0;
         const BATCH_SIZE = 50;
@@ -31,6 +30,8 @@ export const checkEndedEvents = async () => {
                 const naiveDateTime = parse(endTimeString, 'yyyy-MM-dd HH:mm', new Date());
                 const zonedEventEnd = utcToZonedTime(naiveDateTime, timezone);
                 const nowInZone = utcToZonedTime(new Date(), timezone);
+                console.log('Cron job started at:', nowInZone);
+                console.log('Event Date Time:', zonedEventEnd);
 
                 if (!isValid(zonedEventEnd)) {
                     console.warn(`Invalid date for event ID ${event.id}:`, endTimeString);
