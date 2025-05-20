@@ -5,7 +5,7 @@ const { utcToZonedTime } = require('date-fns-tz');
 const isValid = require('date-fns/isValid');
 const prisma = require("../config/db");
 
-const checkEvent = async () => {
+exports.checkEvent = async () => {
   try {
     const nowUTC = new Date();
     console.log("Running cron job at UTC time:", nowUTC);
@@ -42,5 +42,3 @@ const checkEvent = async () => {
     console.error("Error in cron job:", error.message || error);
   }
 };
-
-module.exports = checkEndedEvents;
