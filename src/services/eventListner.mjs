@@ -1,37 +1,67 @@
 import { PrismaClient } from '@prisma/client';
 import cron from 'node-cron';
 import { format, parse, isValid } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 
 const prisma = new PrismaClient();
 
-cron.schedule('* * * * *', async () => {
+export const checkEndedEvents = async () => {
     try {
-        const now = new Date();
-        console.log('Cron job started at:', now);
+        const start = new Date();
+        console.log('Cron job started at:', start);
 
-        const events = await prisma.event.findMany({
-            where: { visibility: true },
-        });
+        let hiddenCount = 0;
+        const BATCH_SIZE = 50;
+        let skip = 0;
 
-        for (const event of events) {
-            const endTimeString = `${event.end_date} ${event.end_time}`;
-            const eventEndDateTime = parse(endTimeString, 'yyyy-MM-dd HH:mm', new Date());
+        while (true) {
+            const batch = await prisma.event.findMany({
+                where: { visibility: true },
+                skip,
+                take: BATCH_SIZE,
+            });
 
-            if (!isValid(eventEndDateTime)) {
-                console.warn(`Invalid date for event ID ${event.id}:`, endTimeString);
-                continue;
+            if (batch.length === 0) break;
+
+            for (const event of batch) {
+                const endTimeString = `${event.end_date} ${event.end_time}`;
+                const timezone = event.timezone || 'UTC';
+
+                // Parse datetime assuming it's in event's timezone
+                const naiveDateTime = parse(endTimeString, 'yyyy-MM-dd HH:mm', new Date());
+                const zonedEventEnd = utcToZonedTime(naiveDateTime, timezone);
+                const nowInZone = utcToZonedTime(new Date(), timezone);
+
+                if (!isValid(zonedEventEnd)) {
+                    console.warn(`Invalid date for event ID ${event.id}:`, endTimeString);
+                    continue;
+                }
+
+                if (nowInZone > zonedEventEnd) {
+                    await prisma.event.update({
+                        where: { id: event.id },
+                        data: { visibility: false },
+                    });
+                    console.log(`Event ${event.id} hidden`);
+                    hiddenCount++;
+                }
             }
 
-            if (new Date() > eventEndDateTime) {
-                await prisma.event.update({
-                    where: { id: event.id },
-                    data: { visibility: false },
-                });
-                console.log(`Event ${event.id} hidden`);
-            }
+            skip += BATCH_SIZE;
         }
+
+        const end = new Date();
+        console.log(`Processed ${skip} events`);
+        console.log(`Hidden ${hiddenCount} ended events`);
+        console.log(`Duration: ${end - start} ms`);
 
     } catch (error) {
         console.error('Error in cron job:', error.message || error);
     }
+};
+
+// Run every minute
+cron.schedule('* * * * *', async () => {
+    console.log('Scheduled cron job triggered...');
+    await checkEndedEvents();
 });
