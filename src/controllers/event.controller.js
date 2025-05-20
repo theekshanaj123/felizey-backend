@@ -64,9 +64,9 @@ exports.createEvent = async (req, res) => {
         ];
 
         for (const field of requiredFields) {
-            if(req.body[field] === undefined || req.body[field] === null || req.body[field] === ""){
+            if (req.body[field] === undefined || req.body[field] === null || req.body[field] === "") {
                 return res.status(500).json({
-                   message:`${field} is requird.`
+                    message: `${field} is requird.`
                 });
             }
         }
@@ -575,6 +575,105 @@ exports.fetchLetestEvents = async (req, res) => {
     } catch (e) {
         console.error(e);
         return res.status(500).json({
+            message: e.message
+        });
+    }
+};
+
+exports.fetchPopularEvents = async (req, res) => {
+    try {
+        const events = await prisma.event.findMany({
+            include: {
+                tickets: true,
+                User_View_Count: true,
+                favorite: true,
+            }
+        });
+
+        const eventsWithScore = events.map((event) => {
+            const viewCount = event.User_View_Count.length; // total unique views
+            const likeCount = event.favorite.length; // total favorites = likes
+            const purchaseCount = event.tickets.filter(t => t.isPurchased).length; // assuming 'isPurchased' is a field
+
+            const popularity_score = (viewCount * 0.5) + (likeCount * 2) + (purchaseCount * 1);
+
+            return {
+                ...event,
+                popularity_score,
+                analytics: {
+                    views: viewCount,
+                    likes: likeCount,
+                    purchases: purchaseCount
+                }
+            };
+        });
+
+        const sortedEvents = eventsWithScore.sort((a, b) => b.popularity_score - a.popularity_score);
+
+        // Limit to top 10
+        const mostPopularEvents = sortedEvents.slice(0, 10);
+
+        return res.status(200).json({
+            status: true,
+            message: "Success",
+            data: mostPopularEvents
+        });
+
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({
+            status: false,
+            message: e.message
+        });
+    }
+
+};
+
+exports.addNewReview = async (req, res) => {
+
+    try {
+
+        const {event_id, review} = req.body;
+        const user_id = req.user.id;
+
+        const reqiredFields = [
+            "event_id",
+            "review"
+        ];
+
+        for (const field of reqiredFields) {
+            if (req.body[field] === undefined || req.body[field] === null || req.body[field] === "") {
+                res.status(500).json({
+                    message: `${field} is required.`
+                });
+            }
+        }
+
+        const userReview = await prisma.user_Review.create({
+            data: {
+                user: {
+                    connect: {
+                        id: user_id
+                    }
+                },
+                event: {
+                    connect: {
+                        id: event_id
+                    }
+                },
+                review: review
+            }
+        });
+
+        return res.status(200).json({
+            status: true,
+            mesaage: "Review Added.",
+            data: userReview
+        });
+
+
+    } catch (e) {
+        res.status(500).json({
             message: e.message
         });
     }

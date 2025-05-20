@@ -34,6 +34,8 @@ model User {
   User_View_Count User_View_Count[]
 
   Google_Login Google_Login[]
+
+  User_Review User_Review[]
 }
 
 model Ticket {
@@ -77,7 +79,6 @@ model Event {
   parking           Boolean?
   language          Json?
   ticket_categories Json?
-  // price             String?
   ticket_status     Boolean?
   event_type        String?
   event_privacy     String?
@@ -90,6 +91,8 @@ model Event {
   favorite Favorite[]
 
   User_View_Count User_View_Count[]
+
+  User_Review User_Review[]
 }
 
 model Favorite {
@@ -149,4 +152,15 @@ model Google_Login {
   photo     String
 
   user User @relation(fields: [user_id], references: [id])
+}
+
+model User_Review {
+  id         String   @id @default(uuid())
+  user_id    String
+  event_id   String
+  review     String
+  created_at DateTime @default(now())
+
+  user  User  @relation(fields: [user_id], references: [id])
+  event Event @relation(fields: [event_id], references: [id])
 }
