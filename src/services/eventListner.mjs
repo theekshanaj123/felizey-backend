@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import cron from 'node-cron';
-import { format, parse, isValid } from 'date-fns';
+import { parse, isValid } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 
 const prisma = new PrismaClient();
@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 export const checkEndedEvents = async () => {
     try {
         const start = new Date();
+        console.log('Cron job started at (UTC):', start);
 
         let hiddenCount = 0;
         const BATCH_SIZE = 50;
@@ -22,6 +23,8 @@ export const checkEndedEvents = async () => {
 
             if (batch.length === 0) break;
 
+            const nowUTC = new Date(); // Only one now() call per batch
+
             for (const event of batch) {
                 const endTimeString = `${event.end_date} ${event.end_time}`;
                 const timezone = event.timezone || 'UTC';
@@ -29,9 +32,7 @@ export const checkEndedEvents = async () => {
                 // Parse datetime assuming it's in event's timezone
                 const naiveDateTime = parse(endTimeString, 'yyyy-MM-dd HH:mm', new Date());
                 const zonedEventEnd = utcToZonedTime(naiveDateTime, timezone);
-                const nowInZone = utcToZonedTime(new Date(), timezone);
-                console.log('Cron job started at:', nowInZone);
-                console.log('Event Date Time:', zonedEventEnd);
+                const nowInZone = utcToZonedTime(nowUTC, timezone);
 
                 if (!isValid(zonedEventEnd)) {
                     console.warn(`Invalid date for event ID ${event.id}:`, endTimeString);
@@ -43,7 +44,7 @@ export const checkEndedEvents = async () => {
                         where: { id: event.id },
                         data: { visibility: false },
                     });
-                    console.log(`Event ${event.id} hidden`);
+                    console.log(`[CRON] Event ${event.id} hidden`);
                     hiddenCount++;
                 }
             }
@@ -65,4 +66,15 @@ export const checkEndedEvents = async () => {
 cron.schedule('* * * * *', async () => {
     console.log('Scheduled cron job triggered...');
     await checkEndedEvents();
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    await prisma.$disconnect();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    await prisma.$disconnect();
+    process.exit(0);
 });
