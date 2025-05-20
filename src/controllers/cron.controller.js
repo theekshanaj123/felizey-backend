@@ -1,5 +1,3 @@
-// cron/checkEventsCron.js
-
 const { parse } = require('date-fns');
 const { utcToZonedTime } = require('date-fns-tz');
 const isValid = require('date-fns/isValid');
@@ -18,7 +16,6 @@ exports.checkEvent = async () => {
       const endTimeString = `${event.end_date} ${event.end_time}`;
       const eventTimezone = event.timezone || 'UTC';
 
-      // Parse end time as if it's in the event's timezone
       const naiveDateTime = parse(endTimeString, "yyyy-MM-dd HH:mm", new Date());
       const zonedEventEnd = utcToZonedTime(naiveDateTime, eventTimezone);
 
