@@ -1,9 +1,14 @@
-const { format, parse, isValid } = require('date-fns');
+// cron/checkEventsCron.js
+
+const { parse } = require('date-fns');
+const { utcToZonedTime } = require('date-fns-tz');
+const isValid = require('date-fns/isValid');
 const prisma = require("../config/db");
-exports.checkEvent = async () => {
+
+const checkEvent = async () => {
   try {
-    const now = new Date();
-    console.log("Cron endpoint triggered at:", now);
+    const nowUTC = new Date();
+    console.log("Running cron job at UTC time:", nowUTC);
 
     const events = await prisma.event.findMany({
       where: { visibility: true },
@@ -11,29 +16,31 @@ exports.checkEvent = async () => {
 
     for (const event of events) {
       const endTimeString = `${event.end_date} ${event.end_time}`;
-      const eventEndDateTime = parse(
-        endTimeString,
-        "yyyy-MM-dd HH:mm",
-        new Date()
-      );
+      const eventTimezone = event.timezone || 'UTC';
 
-      if (!isValid(eventEndDateTime)) {
+      // Parse end time as if it's in the event's timezone
+      const naiveDateTime = parse(endTimeString, "yyyy-MM-dd HH:mm", new Date());
+      const zonedEventEnd = utcToZonedTime(naiveDateTime, eventTimezone);
+
+      if (!isValid(zonedEventEnd)) {
         console.warn(`Invalid date for event ID ${event.id}:`, endTimeString);
         continue;
       }
 
-      if (new Date() > eventEndDateTime) {
+      const nowInZone = utcToZonedTime(nowUTC, eventTimezone);
+
+      if (nowInZone > zonedEventEnd) {
         await prisma.event.update({
           where: { id: event.id },
           data: { visibility: false },
         });
-        console.log(`Event ${event.id} hidden`);
+        console.log(`[CRON] Event ${event.id} hidden (ended)`);
       }
     }
 
-    return res.status(200).json({ message: "Cron job executed successfully" });
   } catch (error) {
-    console.error("Error in cron endpoint:", error.message || error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error in cron job:", error.message || error);
   }
 };
+
+module.exports = checkEndedEvents;
