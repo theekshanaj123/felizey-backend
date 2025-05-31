@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
             }, process.env.JWT_SECRET, // { expiresIn: "1h" }
         );
 
-        return res.status(201).json({
+        return res.status(200).json({
             message: "User created", user: {id: user.id, name: user.name, email: user.email, token: token},
         });
     } catch (error) {

@@ -61,7 +61,7 @@ model Event {
   address           String?
   location          String?
   country           String?
-  region            String?
+  region            Json?
   marker            Json?
   timezone          String?
   start_date        String?
