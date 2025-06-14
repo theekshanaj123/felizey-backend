@@ -11,6 +11,8 @@ const ticketRoutes = require("./routes/ticket.routes");
 const cronRoutes = require("./routes/cron.routes");
 require("dotenv").config();
 
+app.set('trust proxy', true);
+
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/password", passwordRoutes);

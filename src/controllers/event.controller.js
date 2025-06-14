@@ -689,35 +689,19 @@ exports.addNewReview = async (req, res) => {
 exports.fetchNearbyEvent = async (req , res) => {
     try {
 
-        const ip = req.ip || req.connection.remoteAddress;
-        console.log("User IP:", ip);
+        // Get the real IP even when behind proxies
+        const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
+            req.socket?.remoteAddress ||
+            req.connection?.remoteAddress ||
+            req.ip;
 
-        try {
-            const response = await axios.get(`https://ipapi.co/${ip}/json/`);
-            const location = response.data;
+        // Optional: Clean up IPv6 localhost (::ffff:127.0.0.1 => 127.0.0.1)
+        const cleanedIp = ip.startsWith('::ffff:') ? ip.split(':').pop() : ip;
 
-            const country = location.country_name;
-            const region = location.region;
-            const timezone = location.timezone;
-
-            res.json({
-                ip,
-                country,
-                region,
-                timezone
-            });
-        } catch (error) {
-            console.error("Error fetching location:", error.message);
-            res.status(500).json({error: "Could not determine location"});
-        }
-
-        const inputDateTime = '2025-05-28 17:59';
-        const timeZone = 'Asia/Shanghai';
-        const d = dayjs.tz(inputDateTime, timeZone);
-
-        console.log(d.utc().format());
-
-        const events = await prisma.event.findMany({})
+        res.json({
+            raw_ip: ip,
+            cleaned_ip: cleanedIp
+        });
 
     } catch (e) {
         res.status(500).json({
