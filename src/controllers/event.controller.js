@@ -1,11 +1,5 @@
 const prisma = require("../config/db");
-const dayjs = require('dayjs');
-const utc = require('dayjs/plugin/utc');
-const timezone = require('dayjs/plugin/timezone');
-const axios = require('axios');
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+const getIP = require('../services/getIp');
 
 exports.createEvent = async (req, res) => {
     try {
@@ -689,30 +683,13 @@ exports.addNewReview = async (req, res) => {
 exports.fetchNearbyEvent = async (req , res) => {
     try {
 
-        const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
-            req.socket?.remoteAddress ||
-            req.connection?.remoteAddress ||
-            req.ip;
-
-        // IPv6 notation if needed
-        const cleanIp = ip.startsWith('::ffff:') ? ip.split(':').pop() : ip.split(',')[0].trim();
-
-        console.log("Detected IP:", cleanIp);
-
-        try {
-            const response = await axios.get(`https://ipapi.co/${cleanIp}/json/`);
-            const location = response.data;
-
-            res.json({
-                original_ip: ip,
-                cleaned_ip: cleanIp,
-                country: location.country_name,
-                region: location.region,
-                timezone: location.timezone
+        const ipDate = await getIP(req);
+        if(ipDate.status){
+            res.status(200).json(ipDate);
+        }else{
+            res.status(500).json({
+                message: "Somthing went wrong!."
             });
-        } catch (error) {
-            console.error("Error fetching location:", error.message);
-            res.status(500).json({ error: "Could not determine location" });
         }
 
     } catch (e) {
