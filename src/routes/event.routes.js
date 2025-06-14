@@ -6,7 +6,8 @@ const { createEvent, updateEvent, deleteEvent, fetchEventsByCategory, fetchRando
     fetchAllEvents,
     fetchLetestEvents,
     addNewReview,
-    fetchPopularEvents
+    fetchPopularEvents,
+    fetchNearbyEvent
 } = require("../controllers/event.controller");
 
 router.post("/createEvent", authenticateToken, createEvent);
@@ -21,5 +22,6 @@ router.get("/getRandomEvent", authenticateToken, fetchRandomizedEvents);
 router.get("/getEventAdvanceSearch", authenticateToken, fetchEventsAdvanced);
 router.get("/getEventByUser/:userId", authenticateToken, fetchEventsByUser);
 router.get("/getEventById/:eventId", authenticateToken, fetchEventsById);
+router.get("/getNearbyEvent", authenticateToken, fetchNearbyEvent);
 
 module.exports = router;

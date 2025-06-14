@@ -1,4 +1,11 @@
 const prisma = require("../config/db");
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+const axios = require('axios');
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 exports.createEvent = async (req, res) => {
     try {
@@ -435,8 +442,8 @@ exports.fetchEventsAdvanced = async (req, res) => {
             orderBy: {
                 created_at: "desc",
             },
-            // take: 5,
-            // skip: parseInt(skip),
+            take: 5,
+            skip: parseInt(skip),
         });
 
         const users = await prisma.user.findMany({
@@ -671,6 +678,46 @@ exports.addNewReview = async (req, res) => {
             data: userReview
         });
 
+
+    } catch (e) {
+        res.status(500).json({
+            message: e.message
+        });
+    }
+};
+
+exports.fetchNearbyEvent = async (req , res) => {
+    try {
+
+        const ip = req.ip || req.connection.remoteAddress;
+        console.log("User IP:", ip);
+
+        try {
+            const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+            const location = response.data;
+
+            const country = location.country_name;
+            const region = location.region;
+            const timezone = location.timezone;
+
+            res.json({
+                ip,
+                country,
+                region,
+                timezone
+            });
+        } catch (error) {
+            console.error("Error fetching location:", error.message);
+            res.status(500).json({error: "Could not determine location"});
+        }
+
+        const inputDateTime = '2025-05-28 17:59';
+        const timeZone = 'Asia/Shanghai';
+        const d = dayjs.tz(inputDateTime, timeZone);
+
+        console.log(d.utc().format());
+
+        const events = await prisma.event.findMany({})
 
     } catch (e) {
         res.status(500).json({
