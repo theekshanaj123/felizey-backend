@@ -689,19 +689,31 @@ exports.addNewReview = async (req, res) => {
 exports.fetchNearbyEvent = async (req , res) => {
     try {
 
-        // Get the real IP even when behind proxies
         const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
             req.socket?.remoteAddress ||
             req.connection?.remoteAddress ||
             req.ip;
 
-        // Optional: Clean up IPv6 localhost (::ffff:127.0.0.1 => 127.0.0.1)
-        const cleanedIp = ip.startsWith('::ffff:') ? ip.split(':').pop() : ip;
+        // IPv6 notation if needed
+        const cleanIp = ip.startsWith('::ffff:') ? ip.split(':').pop() : ip.split(',')[0].trim();
 
-        res.json({
-            raw_ip: ip,
-            cleaned_ip: cleanedIp
-        });
+        console.log("Detected IP:", cleanIp);
+
+        try {
+            const response = await axios.get(`https://ipapi.co/${cleanIp}/json/`);
+            const location = response.data;
+
+            res.json({
+                original_ip: ip,
+                cleaned_ip: cleanIp,
+                country: location.country_name,
+                region: location.region,
+                timezone: location.timezone
+            });
+        } catch (error) {
+            console.error("Error fetching location:", error.message);
+            res.status(500).json({ error: "Could not determine location" });
+        }
 
     } catch (e) {
         res.status(500).json({
