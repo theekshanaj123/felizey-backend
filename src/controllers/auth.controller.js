@@ -2,6 +2,7 @@ const prisma = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const supabase = require('../services/supabaseClient');
+const sanitizeUser = require("../services/sanitizerUser");
 
 exports.register = async (req, res) => {
     try {
@@ -72,7 +73,7 @@ exports.login = async (req, res) => {
         );
 
         return res.status(200).json({
-            status: true, message: "Login successful", token: token, user: user
+            status: true, message: "Login successful", token: token, user: sanitizeUser(user)
         });
     } catch (error) {
         console.error(error);
@@ -131,7 +132,7 @@ exports.googleLogin = async (req, res) => {
                 );
 
                 return res.status(200).json({
-                    status: true, message: "Success", user: createUser, token: token
+                    status: true, message: "Success", user: sanitizeUser(createUser), token: token
                 })
 
             }
@@ -150,7 +151,7 @@ exports.googleLogin = async (req, res) => {
         );
 
         return res.status(200).json({
-            status: true, message: "Login successful", token: token, user: user
+            status: true, message: "Login successful", token: token, user: sanitizeUser(user)
         });
 
     } catch (e) {

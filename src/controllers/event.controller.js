@@ -1,5 +1,7 @@
 const prisma = require("../config/db");
-const getIP = require('../services/getIp');
+const manageEvent = require('../services/manageEvent');
+const getIp = require('../services/getIp');
+const {startOfDay, endOfDay, startOfWeek, startOfMonth} = require("date-fns");
 
 exports.createEvent = async (req, res) => {
     try {
@@ -540,6 +542,36 @@ exports.fetchEventsById = async (req, res) => {
     }
 };
 
+exports.fetchEventsByTicketId = async (req, res) => {
+    try {
+        const {ticketId} = req.params;
+
+        if (!ticketId) {
+            return res.status(500).json({message: "Ticket ID is required."});
+        }
+
+        const events = await prisma.ticket.findUnique({
+            where: {
+                id: ticketId
+            }
+        });
+
+        const eventsData = await prisma.event.findUnique({
+            where: {
+                id: events.eventId,
+            }
+        });
+
+        return res.status(200).json({
+            status: true,
+            data: eventsData,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({message: error.message});
+    }
+};
+
 exports.fetchAllEvents = async (req, res) => {
     try {
 
@@ -680,15 +712,48 @@ exports.addNewReview = async (req, res) => {
     }
 };
 
-exports.fetchNearbyEvent = async (req , res) => {
+exports.fetchNearbyEvent = async (req, res) => {
     try {
 
-        const ipDate = await getIP(req);
-        if(ipDate.status){
-            res.status(200).json(ipDate);
-        }else{
-            res.status(500).json({
-                message: "Somthing went wrong!."
+        const userId = req.user.id;
+
+        const events = await prisma.event.findMany({
+            where: {user_id: userId}
+        });
+
+        const eventsWithDateTime = events.map(event => {
+            const [year, month, day] = event.start_date.split('-');
+            const [hours, minutes] = event.start_time.split(':');
+            const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+            return {
+                ...event,
+                startDateTime: dateTime,
+            };
+        });
+
+        const now = new Date();
+        const upcomingEvents = eventsWithDateTime.filter(e => e.startDateTime > now);
+        upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        try {
+            const processedEvents = await Promise.all(
+                upcomingEvents.map(event => manageEvent(toCurrency, event))
+            );
+
+            return res.json({
+                status: true,
+                data: processedEvents
+            });
+
+        } catch (err) {
+            console.error('Error processing events:', err.message);
+            return res.status(500).json({
+                status: false,
+                error: 'Internal server error'
             });
         }
 
@@ -698,3 +763,188 @@ exports.fetchNearbyEvent = async (req , res) => {
         });
     }
 };
+
+exports.fetchTotalEarning = async (req, res) => {
+    try {
+
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
+        const weekStart = startOfWeek(new Date(), {weekStartsOn: 1});
+        const monthStart = startOfMonth(new Date());
+
+        const {userId} = req.params;
+
+        if (!userId) {
+            return res.status(500).json({message: 'User ID is required'});
+        }
+
+        const [todayTotal, weekTotal, monthTotal] = await Promise.all([
+            prisma.order.aggregate({
+                _sum: {
+                    total_amount: true
+                },
+                where: {
+                    user_id: userId,
+                    created_at: {gte: todayStart, lte: todayEnd},
+                },
+            }),
+
+            prisma.order.aggregate({
+                _sum: {
+                    total_amount: true
+                },
+                where: {
+                    user_id: userId,
+                    created_at: {gte: weekStart},
+                },
+            }),
+
+            prisma.order.aggregate({
+                _sum: {
+                    total_amount: true
+                },
+                where: {
+                    user_id: userId,
+                    created_at: {gte: monthStart},
+                },
+            }),
+        ]);
+
+        return res.status(200).json({
+            status: true,
+            data: {
+                today: todayTotal._sum.total_amount || 0,
+                week: weekTotal._sum.total_amount || 0,
+                month: monthTotal._sum.total_amount || 0,
+            }
+        });
+
+    } catch (e) {
+        res.status(500).json({
+            message: e.message
+        });
+    }
+};
+
+exports.fetchTotalCount = async (req, res) => {
+    try {
+
+        const {eventId} = req.params;
+
+        const userId = req.user.id;
+
+        if (!userId) {
+            return res.status(500).json({message: 'User ID is required'});
+        }
+
+        if (!eventId) {
+            return res.status(500).json({message: 'Event ID is required'});
+        }
+
+        const [allticketsCount, soldTickets, scanedTickets, refunds] = await Promise.all([
+
+            prisma.ticket.aggregate({
+                _sum: {
+                    quantity_available: true
+                },
+                where: {
+                    eventId: eventId
+                }
+            }),
+
+            prisma.order_Item.aggregate({
+                _count: true,
+                where: {
+                    user_id: userId,
+                    event_id: eventId,
+                    status: "Paid"
+                },
+            }),
+
+            prisma.order_Item.aggregate({
+                _count: true,
+                where: {
+                    user_id: userId,
+                    event_id: eventId,
+                    isScaned: true
+                },
+            }),
+
+            prisma.order.aggregate({
+                _count: true,
+                where: {
+                    user_id: userId,
+                    event_id: eventId,
+                    status: "refund"
+                },
+            }),
+        ]);
+
+        return res.status(200).json({
+            status: true,
+            data: {
+                allTicketsCount: allticketsCount._sum.quantity_available || 0,
+                soldTickets: soldTickets._count || 0,
+                scanedTickets: scanedTickets._count || 0,
+                refunds: refunds._count || 0,
+            }
+        });
+
+    } catch (e) {
+        return res.status(500).json({
+            message: e.message
+        });
+    }
+}
+
+exports.fetchSellingTicketsCountByCategory = async (req, res) => {
+    try {
+
+        const {eventId, category} = req.body;
+
+        const userId = req.user.id;
+
+        if (!userId) {
+            return res.status(500).json({message: 'User ID is required'});
+        }
+
+        if (!eventId) {
+            return res.status(500).json({message: 'Event ID is required'});
+        }
+
+        if (!Array.isArray(category)) {
+            return res.status(500).json({message: 'category is not an array'});
+        }
+
+        const result = await Promise.all(
+            category.map(async (cate) => {
+                const count = await prisma.order_Item.aggregate({
+                    _count: true,
+                    where: {
+                        event_id: eventId,
+                        ticket: {
+                            type: cate
+                        }
+                    }
+                });
+
+                return {
+                    category: cate,
+                    count: count._count
+                };
+            })
+        );
+
+        return res.status(200).json({
+            status: true,
+            data: result?.[0]
+        });
+
+    } catch (e) {
+        return res.status(500).json({
+            message: e.message
+        });
+    }
+}
+
+

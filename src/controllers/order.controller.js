@@ -51,7 +51,7 @@ exports.completePayment = async (req, res) => {
         } catch (err) {
             console.log(`Webhook signature verification failed.`);
             return res.status(500).json({
-                message : "Webhook signature verification failed."
+                message: "Webhook signature verification failed."
             });
         }
 
@@ -61,67 +61,77 @@ exports.completePayment = async (req, res) => {
             const categories = session.metadata.categories;
             const items = JSON.parse(session.metadata.items);
 
-            const total = items.reduce((acc, cur) => acc + cur.priceEach * cur.quantity, 0);
+            const ticketcount = await prisma.ticket.findUnique({where: {id: item.ticketId}});
 
-            const order = await prisma.order.create({
-                data: {
-                    user: {
-                        connect: {
-                            id: userId,
-                        },
-                    },
-                    total_amount: total,
-                    status: "paid",
-                    categories: categories,
-                },
-            });
+            if (ticketcount.quantity_available > 0) {
+                const total = items.reduce((acc, cur) => acc + cur.priceEach * cur.quantity, 0);
 
-            for (const item of items) {
-                const now = new Date();
-                const timestamp = now.toISOString().slice(11, 23).replace(/[:.]/g, ''); // HHmmssSSS
-                const final_qr_id = item.ticketId + userId + order.id + timestamp;
-                const qrData = await QRCode.toDataURL(final_qr_id);
-
-                await prisma.order_Item.create({
+                const order = await prisma.order.create({
                     data: {
                         user: {
                             connect: {
                                 id: userId,
                             },
                         },
-                        ticket: {
-                            connect: {
-                                id: item.ticketId,
-                            },
-                        },
-                        order: {
-                            connect: {
-                                id: order.id,
-                            },
-                        },
-                        price_each: item.priceEach,
-                        currency: item.currency,
-                        qr: qrData,
+                        total_amount: total,
+                        status: "Processing",
+                        categories: categories,
                     },
                 });
 
-                await prisma.ticket.update({
-                    where:{
-                        id : item.ticketId,
-                    },
-                    data : {
-                        quantity_available: {
-                            decrement: 1,
-                        },
-                    }
-                });
+                for (const item of items) {
+                    const now = new Date();
+                    const timestamp = now.toISOString().slice(11, 23).replace(/[:.]/g, ''); // HHmmssSSS
+                    const final_qr_id = item.ticketId + userId + order.id + timestamp;
+                    const qrData = await QRCode.toDataURL(final_qr_id);
 
+                    await prisma.order_Item.create({
+                        data: {
+                            user: {
+                                connect: {
+                                    id: userId,
+                                },
+                            },
+                            ticket: {
+                                connect: {
+                                    id: item.ticketId,
+                                },
+                            },
+                            order: {
+                                connect: {
+                                    id: order.id,
+                                },
+                            },
+                            price_each: item.priceEach,
+                            currency: item.currency,
+                            qr: qrData,
+                            isScaned: false,
+                        },
+                    });
+
+                    await prisma.ticket.update({
+                        where: {
+                            id: item.ticketId,
+                        },
+                        data: {
+                            quantity_available: {
+                                decrement: 1,
+                            },
+                        }
+                    });
+
+                }
+            }else {
+                return res.status(500).json({
+                    message: "Tickets Not Available."
+                });
             }
+
         }
 
         return res.status(200).json({
             status: true,
-            message : "Complete Order.",
+            message: "Complete Order.",
         }).end();
 
     } catch (e) {

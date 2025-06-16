@@ -93,6 +93,8 @@ model Event {
   User_View_Count User_View_Count[]
 
   User_Review User_Review[]
+  Order       Order[]
+  Order_Item  Order_Item[]
 }
 
 model Favorite {
@@ -108,12 +110,14 @@ model Favorite {
 model Order {
   id           String   @id @default(uuid())
   user_id      String
+  event_id     String
   total_amount Int
   status       String
   categories   String
   created_at   DateTime @default(now())
 
-  user User @relation(fields: [user_id], references: [id])
+  user  User  @relation(fields: [user_id], references: [id])
+  event Event @relation(fields: [event_id], references: [id])
 
   Order_Item Order_Item[]
 }
@@ -123,14 +127,18 @@ model Order_Item {
   user_id    String
   ticket_id  String
   order_id   String
+  event_id   String
   price_each Int
   currency   String
   qr         String
+  isScaned   Boolean
+  status     String
   created_at DateTime @default(now())
 
   user   User   @relation(fields: [user_id], references: [id])
   ticket Ticket @relation(fields: [ticket_id], references: [id])
   order  Order  @relation(fields: [order_id], references: [id])
+  event  Event  @relation(fields: [event_id], references: [id])
 }
 
 model User_View_Count {
