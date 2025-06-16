@@ -135,12 +135,20 @@ exports.createEvent = async (req, res) => {
             createdTickets.push(newTicket);
         }
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            event.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            EventData: event,
+            data: processedEvents,
             Ticketdata: createdTickets,
             message: `Event Created.`,
         });
+
     } catch (error) {
         console.error(error);
         return res.status(400).json({message: error.message});
@@ -297,12 +305,20 @@ exports.updateEvent = async (req, res) => {
             createdTickets.push(newTicket);
         }
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            updatedEvent.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            EventData: updatedEvent,
+            EventData: processedEvents,
             Ticketdata: createdTickets,
             message: "Event Updated Successfully.",
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({message: error.message});
@@ -379,9 +395,16 @@ exports.fetchEventsByCategory = async (req, res) => {
             },
         });
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            data: events,
+            data: processedEvents
         });
     } catch (error) {
         console.error(error);
@@ -403,9 +426,16 @@ exports.fetchRandomizedEvents = async (req, res) => {
             [events[i], events[j]] = [events[j], events[i]];
         }
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            data: events,
+            data: processedEvents
         });
     } catch (error) {
         console.error(error);
@@ -454,12 +484,17 @@ exports.fetchEventsAdvanced = async (req, res) => {
             },
         });
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            data: {
-                event: events,
-                user: users
-            },
+            event: processedEvents,
+            user: users
         });
     } catch (error) {
         console.error(error);
@@ -484,9 +519,16 @@ exports.fetchEventsByUser = async (req, res) => {
             },
         });
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            data: events,
+            data: processedEvents
         });
     } catch (error) {
         console.error(error);
@@ -532,10 +574,18 @@ exports.fetchEventsById = async (req, res) => {
             })
         }
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            data: events,
+            data: processedEvents
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({message: error.message});
@@ -562,10 +612,18 @@ exports.fetchEventsByTicketId = async (req, res) => {
             }
         });
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            eventsData.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            data: eventsData,
+            data: processedEvents
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({message: error.message});
@@ -577,11 +635,17 @@ exports.fetchAllEvents = async (req, res) => {
 
         const events = await prisma.event.findMany();
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            message: "Success",
-            data: events,
-        })
+            data: processedEvents
+        });
 
     } catch (e) {
         return res.status(500).json({
@@ -599,11 +663,17 @@ exports.fetchLetestEvents = async (req, res) => {
             }
         })
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            message: "Success",
-            data: events
-        })
+            data: processedEvents
+        });
 
     } catch (e) {
         console.error(e);
@@ -646,10 +716,16 @@ exports.fetchPopularEvents = async (req, res) => {
         // Limit to top 10
         const mostPopularEvents = sortedEvents.slice(0, 10);
 
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate.data.currency;
+
+        const processedEvents = await Promise.all(
+            mostPopularEvents.map(event => manageEvent(toCurrency, event))
+        );
+
         return res.status(200).json({
             status: true,
-            message: "Success",
-            data: mostPopularEvents
+            data: processedEvents
         });
 
     } catch (e) {
@@ -744,7 +820,7 @@ exports.fetchNearbyEvent = async (req, res) => {
                 upcomingEvents.map(event => manageEvent(toCurrency, event))
             );
 
-            return res.json({
+            return res.status(200).json({
                 status: true,
                 data: processedEvents
             });
