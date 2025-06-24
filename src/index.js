@@ -9,16 +9,12 @@ const uploadRoutes = require("./routes/upload.routes");
 const paymentRoutes = require("./routes/order.routes");
 const ticketRoutes = require("./routes/ticket.routes");
 const cronRoutes = require("./routes/cron.routes");
+const cors = require('cors');
 require("dotenv").config();
 
-app.set('trust proxy', true);
+app.set("trust proxy", true);
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET, POST');
-  next();
-});
+app.use(cors());
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
@@ -30,6 +26,10 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/ticket", ticketRoutes);
 app.use("/api/cron", cronRoutes);
+
+app.get("/api", (req, res) => {
+  res.send("api working..");
+});
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
