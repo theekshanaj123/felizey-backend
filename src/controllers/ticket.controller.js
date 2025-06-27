@@ -19,11 +19,19 @@ exports.scanTicket = async (req, res) => {
             });
         }
 
-        return res.status(200).json({
-            status: true,
-            message: "Success.",
-            data: ticket
-        });
+        if (ticket?.isScaned) {
+            return res.status(500).json({
+                status: false,
+                message: "Ticket Already Scaned.",
+                data: ticket
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                message: "Success.",
+                data: ticket
+            });
+        }
 
     } catch (e) {
         return res.status(500).json({
