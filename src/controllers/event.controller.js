@@ -136,7 +136,8 @@ exports.createEvent = async (req, res) => {
         }
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        console.log()
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             event.map(event => manageEvent(toCurrency, event))
@@ -519,16 +520,16 @@ exports.fetchEventsByUser = async (req, res) => {
             },
         });
 
-        const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
-
-        const processedEvents = await Promise.all(
-            events.map(event => manageEvent(toCurrency, event))
-        );
+        // const ipDate = await getIp(req);
+        // const toCurrency = ipDate.data.currency;
+        //
+        // const processedEvents = await Promise.all(
+        //     events.map(event => manageEvent(toCurrency, event))
+        // );
 
         return res.status(200).json({
             status: true,
-            data: processedEvents
+            data: events
         });
     } catch (error) {
         console.error(error);
