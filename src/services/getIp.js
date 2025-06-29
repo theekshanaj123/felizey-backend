@@ -7,15 +7,19 @@ async function getIP(req) {
         req.connection?.remoteAddress ||
         req.ip;
 
-    const cleanIp = ip.startsWith('::ffff:') ? ip.split(':').pop() : ip.split(',')[0].trim();
+    console.log("ip address : ", ip)
+
+    // const cleanIp = ip.startsWith('::ffff:') ? ip.split(':').pop() : ip.split(',')[0].trim();
+
+    const cleanIp = ip.replace(/^::ffff:/, '').trim();
+
+    console.log("clean ip : ", cleanIp)
 
     try {
         const response = await axios.get(`https://ipapi.co/${cleanIp}/json/`);
-        const location = response.data;
-
         return {
             status: true,
-            data:location
+            data: response.data
         };
 
     } catch (error) {

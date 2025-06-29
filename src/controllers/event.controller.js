@@ -520,16 +520,16 @@ exports.fetchEventsByUser = async (req, res) => {
             },
         });
 
-        // const ipDate = await getIp(req);
-        // const toCurrency = ipDate.data.currency;
-        //
-        // const processedEvents = await Promise.all(
-        //     events.map(event => manageEvent(toCurrency, event))
-        // );
+        const ipDate = await getIp(req);
+        const toCurrency = ipDate?.data?.currency;
+
+        const processedEvents = await Promise.all(
+            events.map(event => manageEvent(toCurrency, event))
+        );
 
         return res.status(200).json({
             status: true,
-            data: events
+            data: processedEvents
         });
     } catch (error) {
         console.error(error);
@@ -849,7 +849,32 @@ exports.fetchTotalEarning = async (req, res) => {
         const weekStart = startOfWeek(new Date(), {weekStartsOn: 1});
         const monthStart = startOfMonth(new Date());
 
-        const {userId} = req.params;
+        const userId = req.user.id;
+        let eventId = req.params.eventId;
+
+        if (!eventId) {
+            const events = await prisma.event.findMany({
+                where: {user_id: userId}
+            });
+
+            const eventsWithDateTime = events.map(event => {
+                const [year, month, day] = event.start_date.split('-');
+                const [hours, minutes] = event.start_time.split(':');
+                const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+                return {
+                    ...event,
+                    startDateTime: dateTime,
+                };
+            });
+
+            const now = new Date();
+            const upcomingEvents = eventsWithDateTime.filter(e => e.startDateTime > now);
+            upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
+            eventId = upcomingEvents[0]?.id;
+
+        }
 
         if (!userId) {
             return res.status(500).json({message: 'User ID is required'});
@@ -862,6 +887,7 @@ exports.fetchTotalEarning = async (req, res) => {
                 },
                 where: {
                     user_id: userId,
+                    event_id: eventId,
                     created_at: {gte: todayStart, lte: todayEnd},
                 },
             }),
@@ -872,6 +898,7 @@ exports.fetchTotalEarning = async (req, res) => {
                 },
                 where: {
                     user_id: userId,
+                    event_id: eventId,
                     created_at: {gte: weekStart},
                 },
             }),
@@ -882,6 +909,7 @@ exports.fetchTotalEarning = async (req, res) => {
                 },
                 where: {
                     user_id: userId,
+                    event_id: eventId,
                     created_at: {gte: monthStart},
                 },
             }),
@@ -906,7 +934,7 @@ exports.fetchTotalEarning = async (req, res) => {
 exports.fetchTotalCount = async (req, res) => {
     try {
 
-        const {eventId} = req.params;
+        let eventId = req.params.eventId;
 
         const userId = req.user.id;
 
@@ -915,7 +943,26 @@ exports.fetchTotalCount = async (req, res) => {
         }
 
         if (!eventId) {
-            return res.status(500).json({message: 'Event ID is required'});
+            const events = await prisma.event.findMany({
+                where: {user_id: userId}
+            });
+
+            const eventsWithDateTime = events.map(event => {
+                const [year, month, day] = event.start_date.split('-');
+                const [hours, minutes] = event.start_time.split(':');
+                const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+                return {
+                    ...event,
+                    startDateTime: dateTime,
+                };
+            });
+
+            const now = new Date();
+            const upcomingEvents = eventsWithDateTime.filter(e => e.startDateTime > now);
+            upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
+            eventId = upcomingEvents[0]?.id;
         }
 
         const [allticketsCount, soldTickets, scanedTickets, refunds] = await Promise.all([
@@ -977,20 +1024,40 @@ exports.fetchTotalCount = async (req, res) => {
 exports.fetchSellingTicketsCountByCategory = async (req, res) => {
     try {
 
-        const {eventId, category} = req.body;
+        let {eventId, category} = req.body;
 
         const userId = req.user.id;
+
+        if (!eventId) {
+            const events = await prisma.event.findMany({
+                where: {user_id: userId}
+            });
+
+            const eventsWithDateTime = events.map(event => {
+                const [year, month, day] = event.start_date.split('-');
+                const [hours, minutes] = event.start_time.split(':');
+                const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+                return {
+                    ...event,
+                    startDateTime: dateTime,
+                };
+            });
+
+            const now = new Date();
+            const upcomingEvents = eventsWithDateTime.filter(e => e.startDateTime > now);
+            upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
+            eventId = upcomingEvents[0]?.id;
+
+        }
 
         if (!userId) {
             return res.status(500).json({message: 'User ID is required'});
         }
 
-        if (!eventId) {
-            return res.status(500).json({message: 'Event ID is required'});
-        }
-
         if (!Array.isArray(category)) {
-            return res.status(500).json({message: 'category is not an array'});
+            return res.status(500).json({message: 'Category is not an array'});
         }
 
         const result = await Promise.all(
@@ -1014,7 +1081,7 @@ exports.fetchSellingTicketsCountByCategory = async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            data: result?.[0]
+            data: result
         });
 
     } catch (e) {
