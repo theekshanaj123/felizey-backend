@@ -26,6 +26,18 @@ exports.scanTicket = async (req, res) => {
                 data: ticket
             });
         } else {
+
+            const updateStatus = await prisma.order_Item.update(
+                {
+                    where: {
+                        id: ticket.id
+                    },
+                    data: {
+                        isScaned: true
+                    }
+                }
+            );
+
             return res.status(200).json({
                 status: true,
                 message: "Success.",
