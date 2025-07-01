@@ -551,41 +551,43 @@ exports.fetchEventsById = async (req, res) => {
             }
         });
 
-        const isUserView = await prisma.user_View_Count.findFirst({
-            where: {
-                event_id: eventId,
-                user_id: req.user.id,
-            }
-        });
+        if(events){
+            const isUserView = await prisma.user_View_Count.findFirst({
+                where: {
+                    event_id: eventId,
+                    user_id: req.user.id,
+                }
+            });
 
-        if (!isUserView) {
-            await prisma.user_View_Count.create({
-                data: {
-                    user: {
-                        connect: {
-                            id: req.user.id
-                        }
-                    },
-                    event: {
-                        connect: {
-                            id: eventId
+            if (!isUserView) {
+                await prisma.user_View_Count.create({
+                    data: {
+                        user: {
+                            connect: {
+                                id: req.user.id
+                            }
+                        },
+                        event: {
+                            connect: {
+                                id: eventId
+                            }
                         }
                     }
-                }
-            })
+                })
+            }
+
+            const ipDate = await getIp(req);
+            const toCurrency = ipDate.data.currency;
+
+            const processedEvents = await manageEvent(toCurrency, events);
+
+            return res.status(200).json({
+                status: true,
+                data: processedEvents
+            });
+        }else{
+            return res.status(500).json({message: "Event Not Found"});
         }
-
-        const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
-
-        const processedEvents = await Promise.all(
-            events.map(event => manageEvent(toCurrency, event))
-        );
-
-        return res.status(200).json({
-            status: true,
-            data: processedEvents
-        });
 
     } catch (error) {
         console.error(error);
@@ -616,9 +618,7 @@ exports.fetchEventsByTicketId = async (req, res) => {
         const ipDate = await getIp(req);
         const toCurrency = ipDate.data.currency;
 
-        const processedEvents = await Promise.all(
-            eventsData.map(event => manageEvent(toCurrency, event))
-        );
+        const processedEvents = await manageEvent(toCurrency, eventsData)
 
         return res.status(200).json({
             status: true,

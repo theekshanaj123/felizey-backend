@@ -8,6 +8,10 @@ const convertEventResCurrency = async (toCurrency, fromCurrency, price) => {
 
         const rates = response.data.rates;
 
+        if (!toCurrency){
+            toCurrency = fromCurrency;
+        }
+
         if (!rates[toCurrency]) {
             throw new Error(`Currency code "${toCurrency}" not found.`);
         }

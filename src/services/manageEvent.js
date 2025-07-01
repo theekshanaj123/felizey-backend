@@ -3,8 +3,6 @@ const manageCurrency = require('./currencyConverter');
 async function filterEvent(toCurrency, event) {
     if (!event) return null;
 
-    const defaultCurrency = "LKR";
-
     const parsePrice = (priceStr) => {
         const cleaned = priceStr?.toString().replace(/,/g, '') || '0';
         const parsed = parseFloat(cleaned);
@@ -25,7 +23,7 @@ async function filterEvent(toCurrency, event) {
 
                 try {
                     const result = await manageCurrency.convertEventResCurrency(
-                        toCurrency || defaultCurrency,
+                        toCurrency,
                         category.currency,
                         originalPrice
                     );
