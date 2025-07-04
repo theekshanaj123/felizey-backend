@@ -1,7 +1,6 @@
 const prisma = require("../config/db");
 const bcrypt = require("bcryptjs");
 const sendEmail = require("../services/emailSender");
-// const supabase = require("../services/supabaseClient");
 
 exports.sendPasswordResetEmail = async (req, res) => {
   const { email } = req.body;

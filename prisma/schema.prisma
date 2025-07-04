@@ -36,6 +36,25 @@ model User {
   Google_Login Google_Login[]
 
   User_Review User_Review[]
+
+  User_Assigner User_Role[] @relation("assigner")
+
+  User_Role User_Role[] @relation("user")
+
+  Order_History Order_History[]
+}
+
+model User_Role {
+  id          String   @id @default(uuid())
+  user_id     String
+  assigned_by String
+  role        String
+  event_id    String
+  created_at  DateTime @default(now())
+
+  event    Event @relation(fields: [event_id], references: [id])
+  user     User  @relation("user", fields: [user_id], references: [id])
+  assigner User  @relation("assigner", fields: [assigned_by], references: [id])
 }
 
 model Ticket {
@@ -44,6 +63,7 @@ model Ticket {
   type               String?
   price              String?
   quantity_available Int?
+  status             String
   created_at         DateTime @default(now())
 
   event Event @relation(fields: [eventId], references: [id])
@@ -95,6 +115,10 @@ model Event {
   User_Review User_Review[]
   Order       Order[]
   Order_Item  Order_Item[]
+
+  User_Role User_Role[]
+
+  Order_History Order_History[]
 }
 
 model Favorite {
@@ -171,4 +195,28 @@ model User_Review {
 
   user  User  @relation(fields: [user_id], references: [id])
   event Event @relation(fields: [event_id], references: [id])
+}
+
+model Order_History {
+  id         String   @id @default(uuid())
+  user_id    String
+  event_id   String
+  status     String
+  created_at DateTime @default(now())
+
+  user  User  @relation(fields: [user_id], references: [id])
+  event Event @relation(fields: [event_id], references: [id])
+}
+
+model Organizer_Details {
+  id             String   @id @default(uuid())
+  full_name      String
+  account_number String   @unique
+  bank_name      String
+  bank_branch    String
+  branch_name    String
+  email          String
+  bank_code      String
+  branch_code    String
+  created_at     DateTime @default(now())
 }

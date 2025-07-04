@@ -10,6 +10,7 @@ const paymentRoutes = require("./routes/order.routes");
 const ticketRoutes = require("./routes/ticket.routes");
 const memberRoutes = require("./routes/member.routes");
 const cronRoutes = require("./routes/cron.routes");
+const organizerRoutes = require("./routes/organizer.routes");
 const cors = require('cors');
 require("dotenv").config();
 
@@ -27,6 +28,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/order", paymentRoutes);
 app.use("/api/ticket", ticketRoutes);
 app.use("/api/member", memberRoutes);
+app.use("/api/organizer", organizerRoutes);
 app.use("/api/cron", cronRoutes);
 
 app.get("/api", (req, res) => {

@@ -21,21 +21,6 @@ exports.updateUserEmailSend = async (req, res) => {
             return res.status(400).json({message: sendMail.message});
         }
 
-        // const { error } = await supabase.auth.updateUser({
-        //   email: "kavishkachathumal276@gmail.com",
-        // });
-
-        // if (error) {
-        //   console.error("Email change error:", error.message);
-        //   return res.status(400).json({ message: error.message });
-        // } else {
-        //   console.log("Confirmation email sent to the new address.");
-        //   return res.status(200).json({
-        //     status: true,
-        //     message: `Email update request sent to ${req.user.email}. Verify using the confirmation email.`,
-        //   });
-        // }
-
         return res.status(200).json({
             status: true,
             message: `Email update request sent to ${req.user.email}. Verify using the confirmation email.`,

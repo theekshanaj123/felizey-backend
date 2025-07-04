@@ -14,7 +14,7 @@ async function filterEvent(toCurrency, event) {
     try {
         ticketCategories = await Promise.all(
             event.ticket_categories.map(async (category) => {
-                if (!category || !category.price || !category.currency) {
+                if (!category || !category?.price || !category?.currency) {
                     console.warn('Invalid ticket category:', category);
                     return null;
                 }

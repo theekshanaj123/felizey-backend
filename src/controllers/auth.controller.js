@@ -1,7 +1,6 @@
 const prisma = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const supabase = require('../services/supabaseClient');
 const sanitizeUser = require("../services/sanitizerUser");
 
 exports.register = async (req, res) => {

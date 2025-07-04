@@ -80,3 +80,27 @@ exports.getTicketByEvent = async (req, res) => {
         });
     }
 }
+
+exports.updateStatus = async (req, res) => {
+    try {
+
+        const {event_id, ticketData} = req.body;
+        const userId = req.user.id;
+
+        for (const ticket of ticketData) {
+            if (ticket.qty_available < 0) {
+                return res.status(400).json({message: ticket.type + " Tickets Not Available. Please Try Again."});
+            } else {
+                if(ticket.qty_available === 1){
+                    const ticketStatus = await prisma.ticket.findUnique()
+                }
+            }
+        }
+
+
+    } catch (e) {
+        return res.status(500).json({
+            message: e.message,
+        });
+    }
+};
