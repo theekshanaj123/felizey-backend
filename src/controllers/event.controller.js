@@ -76,7 +76,7 @@ exports.createEvent = async (req, res) => {
 
         const userId = user.id;
 
-        const event = await prisma.event.create({
+        const eventData = await prisma.event.create({
             data: {
                 user: {
                     connect: {
@@ -123,7 +123,7 @@ exports.createEvent = async (req, res) => {
                 data: {
                     event: {
                         connect: {
-                            id: event.id,
+                            id: eventData.id,
                         },
                     },
                     type: ticket.type,
@@ -137,7 +137,7 @@ exports.createEvent = async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            data: event,
+            data: eventData,
             Ticketdata: createdTickets,
             message: `Event Created.`,
         });

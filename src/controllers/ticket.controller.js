@@ -121,7 +121,15 @@ exports.updateStatus = async (req, res) => {
                     }
 
                 } else {
-                    
+                    const history = await prisma.order_History.create(
+                        {
+                            data:{
+                                user_id:user_id,
+                                event_id:event_id,
+                                status:"Pending",
+                            }
+                        }
+                    )
                 }
             }
         }

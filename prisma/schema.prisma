@@ -63,7 +63,7 @@ model Ticket {
   type               String?
   price              String?
   quantity_available Int?
-  status             String
+  status             String?
   created_at         DateTime @default(now())
 
   event Event @relation(fields: [eventId], references: [id])
