@@ -135,17 +135,9 @@ exports.createEvent = async (req, res) => {
             createdTickets.push(newTicket);
         }
 
-        const ipDate = await getIp(req);
-        console.log()
-        const toCurrency = ipDate?.data?.currency;
-
-        const processedEvents = await Promise.all(
-            event.map(event => manageEvent(toCurrency, event))
-        );
-
         return res.status(200).json({
             status: true,
-            data: processedEvents,
+            data: event,
             Ticketdata: createdTickets,
             message: `Event Created.`,
         });
@@ -306,16 +298,9 @@ exports.updateEvent = async (req, res) => {
             createdTickets.push(newTicket);
         }
 
-        const ipDate = await getIp(req);
-        const toCurrency = ipDate?.data?.currency;
-
-        const processedEvents = await Promise.all(
-            updatedEvent.map(event => manageEvent(toCurrency, event))
-        );
-
         return res.status(200).json({
             status: true,
-            EventData: processedEvents,
+            EventData: updatedEvent,
             Ticketdata: createdTickets,
             message: "Event Updated Successfully.",
         });

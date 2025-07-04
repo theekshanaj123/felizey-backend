@@ -88,11 +88,40 @@ exports.updateStatus = async (req, res) => {
         const userId = req.user.id;
 
         for (const ticket of ticketData) {
-            if (ticket.qty_available < 0) {
+            if (ticket.qty_available === 0) {
                 return res.status(400).json({message: ticket.type + " Tickets Not Available. Please Try Again."});
             } else {
-                if(ticket.qty_available === 1){
-                    const ticketStatus = await prisma.ticket.findUnique()
+                if (ticket.qty_available === 1) {
+                    const ticketStatus = await prisma.ticket.findFirst({
+                        where: {
+                            event: {
+                                connect: {
+                                    id: event_id,
+                                }
+                            },
+                            type: ticket.type,
+                        }
+                    });
+
+                    if(ticketStatus.status === "Pending"){
+                        return res.status(400).json({message: ticket.type + " Tickets Not Available. Please Try Again."});
+                    }else{
+                        if(ticketStatus){
+                            const updateTicket = await prisma.ticket.update(
+                                {
+                                    where:{
+                                        id:ticketStatus.id,
+                                    },
+                                    data:{
+                                        status : "Pending",
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                } else {
+                    const
                 }
             }
         }
