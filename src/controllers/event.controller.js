@@ -307,7 +307,7 @@ exports.updateEvent = async (req, res) => {
         }
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             updatedEvent.map(event => manageEvent(toCurrency, event))
@@ -397,7 +397,7 @@ exports.fetchEventsByCategory = async (req, res) => {
         });
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             events.map(event => manageEvent(toCurrency, event))
@@ -428,7 +428,7 @@ exports.fetchRandomizedEvents = async (req, res) => {
         }
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             events.map(event => manageEvent(toCurrency, event))
@@ -486,7 +486,7 @@ exports.fetchEventsAdvanced = async (req, res) => {
         });
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             events.map(event => manageEvent(toCurrency, event))
@@ -577,7 +577,7 @@ exports.fetchEventsById = async (req, res) => {
             }
 
             const ipDate = await getIp(req);
-            const toCurrency = ipDate.data.currency;
+            const toCurrency = ipDate?.data?.currency;
 
             const processedEvents = await manageEvent(toCurrency, events);
 
@@ -616,7 +616,7 @@ exports.fetchEventsByTicketId = async (req, res) => {
         });
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await manageEvent(toCurrency, eventsData)
 
@@ -637,7 +637,7 @@ exports.fetchAllEvents = async (req, res) => {
         const events = await prisma.event.findMany();
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             events.map(event => manageEvent(toCurrency, event))
@@ -665,7 +665,7 @@ exports.fetchLetestEvents = async (req, res) => {
         })
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             events.map(event => manageEvent(toCurrency, event))
@@ -718,7 +718,7 @@ exports.fetchPopularEvents = async (req, res) => {
         const mostPopularEvents = sortedEvents.slice(0, 10);
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         const processedEvents = await Promise.all(
             mostPopularEvents.map(event => manageEvent(toCurrency, event))
@@ -814,7 +814,7 @@ exports.fetchNearbyEvent = async (req, res) => {
         upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
 
         const ipDate = await getIp(req);
-        const toCurrency = ipDate.data.currency;
+        const toCurrency = ipDate?.data?.currency;
 
         try {
             const processedEvents = await Promise.all(

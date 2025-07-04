@@ -24,7 +24,7 @@ async function filterEvent(toCurrency, event) {
                 try {
                     const result = await manageCurrency.convertEventResCurrency(
                         toCurrency,
-                        category.currency,
+                        category?.currency || "USD",
                         originalPrice
                     );
 
@@ -34,7 +34,7 @@ async function filterEvent(toCurrency, event) {
                         qty_available: category.qty_available || 0,
                         original_price: category.price,
                         price: result.convertedAmount,
-                        original_currency: category.currency,
+                        original_currency: category?.currency || "USD",
                         currency: result.to,
                         rate: result.rate,
                     };
