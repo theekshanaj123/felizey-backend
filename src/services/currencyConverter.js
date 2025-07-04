@@ -8,6 +8,10 @@ const convertEventResCurrency = async (toCurrency, fromCurrency, price) => {
 
         const rates = response.data.rates;
 
+        if (!fromCurrency){
+            fromCurrency == "USD";
+        }
+
         if (!toCurrency){
             toCurrency = fromCurrency;
         }

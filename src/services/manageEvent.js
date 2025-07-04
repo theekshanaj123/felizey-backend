@@ -24,7 +24,7 @@ async function filterEvent(toCurrency, event) {
                 try {
                     const result = await manageCurrency.convertEventResCurrency(
                         toCurrency,
-                        category?.currency || "USD",
+                        category?.currency,
                         originalPrice
                     );
 
