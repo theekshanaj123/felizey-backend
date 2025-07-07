@@ -40,8 +40,6 @@ model User {
   User_Assigner User_Role[] @relation("assigner")
 
   User_Role User_Role[] @relation("user")
-
-  Order_History Order_History[]
 }
 
 model User_Role {
@@ -117,8 +115,6 @@ model Event {
   Order_Item  Order_Item[]
 
   User_Role User_Role[]
-
-  Order_History Order_History[]
 }
 
 model Favorite {
@@ -191,17 +187,6 @@ model User_Review {
   user_id    String
   event_id   String
   review     String
-  created_at DateTime @default(now())
-
-  user  User  @relation(fields: [user_id], references: [id])
-  event Event @relation(fields: [event_id], references: [id])
-}
-
-model Order_History {
-  id         String   @id @default(uuid())
-  user_id    String
-  event_id   String
-  status     String
   created_at DateTime @default(now())
 
   user  User  @relation(fields: [user_id], references: [id])

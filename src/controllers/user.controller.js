@@ -204,11 +204,237 @@ exports.deleteUserById = async (req, res) => {
         // await prisma.user.delete({where: {id: id}});
 
         return res.status(200).json({
-            status : true,
+            status: true,
             // message : "User Deleted.",
-            message : "Under Maintaining. Service Coming Soon.",
+            message: "Under Maintaining. Service Coming Soon.",
         });
 
+
+    } catch (e) {
+        console.error(e);
+        return res.status(400).json({message: e.message});
+    }
+}
+
+exports.addNewRole = async (req, res) => {
+    try {
+
+        const {
+            user_id,
+            role,
+            event_id,
+        } = req.body;
+
+        const asignerId = req.user.id;
+
+        const resquredFields = [
+            "user_id",
+            "role",
+            "event_id"
+        ]
+
+        for (const field of resquredFields) {
+            if (req.body[field] === undefined || req.body[field] === null || req.body[field] === "") {
+                return res.status(400).json({
+                    message: field + " is missing."
+                });
+            }
+        }
+
+        const isExist = await prisma.user_Role.findFirst(
+            {
+                where: {
+                    user_id: user_id,
+                    assigned_by: asignerId,
+                    event_id: event_id
+                }
+            }
+        )
+
+        if (isExist) {
+            return res.status(400).json({
+                message: "This user already has a role in this event."
+            });
+        }
+
+        const data = await prisma.user_Role.create(
+            {
+                data: {
+                    user: {
+                        connect: {
+                            id: user_id
+                        }
+                    },
+                    assigner: {
+                        connect: {
+                            id: asignerId
+                        }
+                    },
+                    role: role,
+                    event: {
+                        connect: {
+                            id: event_id
+                        }
+                    }
+                }
+            }
+        );
+
+        return res.status(200).json({
+            status: true,
+            message: "success",
+        })
+
+    } catch (e) {
+        console.error(e);
+        return res.status(400).json({message: e.message});
+    }
+}
+
+exports.getAllRoleByEventId = async (req, res) => {
+    try {
+
+        const {
+            event_id,
+        } = req.query;
+
+        const resquredFields = [
+            "event_id"
+        ]
+
+        for (const field of resquredFields) {
+            if (req.body[field] === undefined || req.body[field] === null || req.body[field] === "") {
+                return res.status(400).json({
+                    message: field + " is missing."
+                });
+            }
+        }
+
+        const isExist = await prisma.user_Role.findFirst(
+            {
+                where: {
+                    event_id: event_id
+                }
+            }
+        )
+
+        if (isExist) {
+            return res.status(200).json({
+                status: true,
+                message: "success",
+                data: isExist
+            })
+
+        }
+        return res.status(400).json({
+            message: "User Roles Not Found!."
+        });
+
+    } catch (e) {
+        console.error(e);
+        return res.status(400).json({message: e.message});
+    }
+}
+
+exports.getUserRoleByEventId = async (req, res) => {
+    try {
+
+        const {
+            event_id,
+            user_id
+        } = req.query;
+
+        const resquredFields = [
+            "event_id",
+            "user_id"
+        ]
+
+        for (const field of resquredFields) {
+            if (req.body[field] === undefined || req.body[field] === null || req.body[field] === "") {
+                return res.status(400).json({
+                    message: field + " is missing."
+                });
+            }
+        }
+
+        const isExist = await prisma.user_Role.findFirst(
+            {
+                where: {
+                    event_id: event_id,
+                    user_id: user_id
+                }
+            }
+        )
+
+        if (isExist) {
+            return res.status(200).json({
+                status: true,
+                message: "success",
+                data: isExist
+            })
+
+        }
+        return res.status(400).json({
+            message: "User Roles Not Found!."
+        });
+
+    } catch (e) {
+        console.error(e);
+        return res.status(400).json({message: e.message});
+    }
+}
+
+
+exports.RemoveUserRoleByEventId = async (req, res) => {
+    try {
+
+        const {
+            event_id,
+            user_id
+        } = req.query;
+
+        const resquredFields = [
+            "event_id",
+            "user_id"
+        ]
+
+        for (const field of resquredFields) {
+            if (req.body[field] === undefined || req.body[field] === null || req.body[field] === "") {
+                return res.status(400).json({
+                    message: field + " is missing."
+                });
+            }
+        }
+
+        const isExist = await prisma.user_Role.findFirst(
+            {
+                where: {
+                    event_id: event_id,
+                    user_id: user_id
+                }
+            }
+        )
+
+        if (isExist) {
+
+            const data = await prisma.user_Role.delete(
+                {
+                    where:{
+                        user_id:user_id,
+                        event_id:event_id
+                    }
+                }
+            )
+
+            return res.status(200).json({
+                status: true,
+                message: "success",
+            })
+
+        }
+        return res.status(400).json({
+            message: "User Roles Not Found!."
+        });
 
     } catch (e) {
         console.error(e);
