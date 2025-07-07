@@ -1,5 +1,6 @@
 const prisma = require("../config/db");
 const ticketExpiryQueue = require('../queues/ticketQueue');
+const {use} = require("express/lib/application");
 
 exports.scanTicket = async (req, res) => {
     try {
@@ -48,6 +49,125 @@ exports.scanTicket = async (req, res) => {
 
     } catch (e) {
         return res.status(500).json({
+            message: e.message,
+        });
+    }
+}
+
+exports.scanTicketByEmailOrMobile = async (req, res) => {
+    try {
+
+        const {mobile, email, event_id} = req.body;
+
+        if (!event_id) {
+            return res.status(400).json({
+                message: "Event Id Missing."
+            });
+        }
+
+        if (mobile) {
+            const user = await prisma.user.findFirst(
+                {
+                    where: {
+                        phoneNumber: mobile
+                    }
+                }
+            );
+
+            if (user) {
+                const ticket = await prisma.order_Item.findUnique({where: {user_id: user.id, event_id: event_id}});
+
+                if (!ticket) {
+                    return res.status(400).json({
+                        message: "User doesn't have This Event Ticket."
+                    });
+                }
+
+                if (ticket?.isScaned) {
+                    return res.status(400).json({
+                        status: false,
+                        message: "Ticket Already Scaned.",
+                        data: ticket
+                    });
+                } else {
+
+                    const updateStatus = await prisma.order_Item.update(
+                        {
+                            where: {
+                                id: ticket.id
+                            },
+                            data: {
+                                isScaned: true
+                            }
+                        }
+                    );
+
+                    return res.status(200).json({
+                        status: true,
+                        message: "Success.",
+                        data: ticket
+                    });
+                }
+            } else {
+                return res.status(400).json({
+                    message: "Mobile Not Found.",
+                });
+            }
+        }
+
+        if (email) {
+            const user = await prisma.user.findFirst(
+                {
+                    where: {
+                        email: email
+                    }
+                }
+            );
+
+            if (user) {
+                const ticket = await prisma.order_Item.findUnique({where: {user_id: user.id, event_id: event_id}});
+
+                if (!ticket) {
+                    return res.status(400).json({
+                        message: "User doesn't have This Event Ticket."
+                    });
+                }
+
+                if (ticket?.isScaned) {
+                    return res.status(400).json({
+                        status: false,
+                        message: "Ticket Already Scaned.",
+                        data: ticket
+                    });
+                } else {
+
+                    const updateStatus = await prisma.order_Item.update(
+                        {
+                            where: {
+                                id: ticket.id
+                            },
+                            data: {
+                                isScaned: true
+                            }
+                        }
+                    );
+
+                    return res.status(200).json({
+                        status: true,
+                        message: "Success.",
+                        data: ticket
+                    });
+                }
+            } else {
+                return res.status(400).json({
+                    message: "Mobile Not Found.",
+                });
+            }
+        }
+
+
+    } catch (e) {
+        return res.status(400).json({
             message: e.message,
         });
     }
@@ -161,7 +281,7 @@ exports.updateStatus = async (req, res) => {
 exports.bookTicket = async (req, res) => {
     try {
 
-        const { ticketId } = req.body;
+        const {ticketId} = req.body;
 
         // Cancel expiry job if exists
         if (activeJobs[ticketId]) {
@@ -173,8 +293,8 @@ exports.bookTicket = async (req, res) => {
 
         // Update DB status
         await prisma.ticket.update({
-            where: { ticketId },
-            data: { status: 'Paid' },
+            where: {ticketId},
+            data: {status: 'Paid'},
         });
 
         return res.status(200).json({

@@ -342,7 +342,7 @@ exports.getUserRoleByEventId = async (req, res) => {
         const {
             event_id,
             user_id
-        } = req.query;
+        } = req.body;
 
         const resquredFields = [
             "event_id",
@@ -385,7 +385,7 @@ exports.getUserRoleByEventId = async (req, res) => {
 }
 
 
-exports.RemoveUserRoleByEventId = async (req, res) => {
+exports.removeUserRoleByEventId = async (req, res) => {
     try {
 
         const {
@@ -417,18 +417,18 @@ exports.RemoveUserRoleByEventId = async (req, res) => {
 
         if (isExist) {
 
-            const data = await prisma.user_Role.delete(
-                {
-                    where:{
-                        user_id:user_id,
-                        event_id:event_id
-                    }
-                }
-            )
+            // const data = await prisma.user_Role.delete(
+            //     {
+            //         where: {
+            //             user_id: user_id,
+            //             event_id: event_id
+            //         }
+            //     }
+            // )
 
             return res.status(200).json({
                 status: true,
-                message: "success",
+                message: "In Progres..",
             })
 
         }
