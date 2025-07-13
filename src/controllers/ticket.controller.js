@@ -2,7 +2,7 @@ const prisma = require("../config/db");
 const ticketExpiryQueue = require('../queues/ticketQueue');
 const {use} = require("express/lib/application");
 
-const stripe = require('stripe')('sk_test_51QyH6VAyOUKnvWabkEFUlf5Bi0Tnb0dR2aS66GhaqJwlQtnH7SsKNFnhDKfOZ44m50QT3h58Yu4lH2P8sIN5klLa00feMW38j1');
+const stripe = require('stripe')(process.env.STRIPE_SK_KEY);
 
 exports.scanTicket = async (req, res) => {
     try {
