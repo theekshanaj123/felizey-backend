@@ -2,6 +2,8 @@ const prisma = require("../config/db");
 const ticketExpiryQueue = require('../queues/ticketQueue');
 const {use} = require("express/lib/application");
 
+const stripe = require('stripe')('sk_test_51QyH6VAyOUKnvWabkEFUlf5Bi0Tnb0dR2aS66GhaqJwlQtnH7SsKNFnhDKfOZ44m50QT3h58Yu4lH2P8sIN5klLa00feMW38j1');
+
 exports.scanTicket = async (req, res) => {
     try {
 
@@ -204,11 +206,27 @@ exports.getTicketByEvent = async (req, res) => {
 
 let activeJobs = {};
 
-exports.updateStatus = async (req, res) => {
+exports.createPaymentSession = async (req, res) => {
     try {
+
+        const {price , currency} = req.body;
 
         const {event_id, ticketData} = req.body;
         const userId = req.user.id;
+
+        const customer = await stripe.customers.create();
+        const ephemeralKey = await stripe.ephemeralKeys.create(
+            { customer: customer.id },
+            { apiVersion: '2024-06-20' }
+        );
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: price,
+            currency: currency,
+            customer: customer.id,
+            automatic_payment_methods: {
+                enabled: true,
+            },
+        });
 
         for (const ticket of ticketData) {
             if (ticket.qty_available === 0) {
@@ -264,19 +282,19 @@ exports.updateStatus = async (req, res) => {
 
         }
 
-        return res.status(200).json({
+
+        return  res.json({
             status: true,
             message: "success",
+            paymentIntent: paymentIntent.client_secret,
+            ephemeralKey: ephemeralKey.secret,
+            customer: customer.id,
         });
-
-
-    } catch (e) {
-        return res.status(500).json({
-            message: e.message,
-        });
+    } catch (error) {
+        console.error(error); // Log full error for debugging
+        res.status(500).json({ error: error.message });
     }
 };
-
 
 exports.bookTicket = async (req, res) => {
     try {
