@@ -131,9 +131,9 @@ model Order {
   id           String   @id @default(uuid())
   user_id      String
   event_id     String
-  total_amount Int
+  total_amount String
   status       String
-  categories   String
+  categories   Json
   created_at   DateTime @default(now())
 
   user  User  @relation(fields: [user_id], references: [id])
@@ -148,7 +148,7 @@ model Order_Item {
   ticket_id  String
   order_id   String
   event_id   String
-  price_each Int
+  price_each String
   currency   String
   qr         String
   isScaned   Boolean

@@ -1,6 +1,7 @@
 const prisma = require("../config/db");
 const ticketExpiryQueue = require('../queues/ticketQueue');
 const {use} = require("express/lib/application");
+const QRCode = require("qrcode");
 
 const stripe = require('stripe')(process.env.STRIPE_SK_KEY);
 
@@ -209,15 +210,12 @@ let activeJobs = {};
 exports.createPaymentSession = async (req, res) => {
     try {
 
-        const {price , currency} = req.body;
-
-        const {event_id, ticketData} = req.body;
-        const userId = req.user.id;
+        const {event_id, ticketData, price, currency} = req.body;
 
         const customer = await stripe.customers.create();
         const ephemeralKey = await stripe.ephemeralKeys.create(
-            { customer: customer.id },
-            { apiVersion: '2024-06-20' }
+            {customer: customer.id},
+            {apiVersion: '2024-06-20'}
         );
         const paymentIntent = await stripe.paymentIntents.create({
             amount: price,
@@ -229,11 +227,25 @@ exports.createPaymentSession = async (req, res) => {
         });
 
         for (const ticket of ticketData) {
+
+            const ticketD = await prisma.ticket.findMany(
+                {
+                    where: {
+                        eventId: event_id,
+                        type: ticket.type
+                    }
+                }
+            );
+
             if (ticket.qty_available === 0) {
                 return res.status(400).json({message: ticket.type + " Tickets Not Available. Please Try Again."});
             }
 
-            if (ticket.qty_available === 1) {
+            if (ticket.qty_available < ticketD.quantity_available) {
+                return res.status(400).json({message: ticket.type + " Tickets Quantity Not Available. Please Try Again."});
+            }
+
+            if (ticket.qty_available === 1 || ticket.qty_available === ticketD.quantity_available) {
                 const ticketStatus = await prisma.ticket.findFirst({
                     where: {
                         eventId: event_id,
@@ -283,7 +295,7 @@ exports.createPaymentSession = async (req, res) => {
         }
 
 
-        return  res.json({
+        return res.json({
             status: true,
             message: "success",
             paymentIntent: paymentIntent.client_secret,
@@ -292,28 +304,107 @@ exports.createPaymentSession = async (req, res) => {
         });
     } catch (error) {
         console.error(error); // Log full error for debugging
-        res.status(500).json({ error: error.message });
+        res.status(500).json({error: error.message});
     }
 };
 
 exports.bookTicket = async (req, res) => {
     try {
 
-        const {ticketId} = req.body;
+        const {tickets, event_id, total_amount, payment_status, currency} = req.body;
 
-        // Cancel expiry job if exists
-        if (activeJobs[ticketId]) {
-            const jobId = activeJobs[ticketId];
-            const job = await ticketExpiryQueue.getJob(jobId);
-            if (job) await job.remove();
-            delete activeJobs[ticketId];
-        }
-
-        // Update DB status
-        await prisma.ticket.update({
-            where: {ticketId},
-            data: {status: 'Paid'},
+        const order = await prisma.order.create({
+            data: {
+                user: {
+                    connect: {
+                        id: req.user.id,
+                    },
+                },
+                event: {
+                    connect: {
+                        id: event_id
+                    }
+                },
+                total_amount: total_amount,
+                status: payment_status,
+                categories: tickets,
+            },
         });
+
+        for (const ticket of tickets) {
+
+            const ticketD = await prisma.ticket.findFirst(
+                {
+                    where: {
+                        eventId: event_id,
+                        type: ticket.type
+                    }
+                }
+            );
+
+            console.log("ticketD : ", ticketD);
+
+            const ticketId = ticketD.id;
+
+            if (activeJobs[ticketId]) {
+                const jobId = activeJobs[ticketId];
+                const job = await ticketExpiryQueue.getJob(jobId);
+                if (job) await job.remove();
+                delete activeJobs[ticketId];
+                console.log("Session Destroyed : " + ticketId);
+            }
+
+            // Update DB status
+            await prisma.ticket.update({
+                where: {id: ticketId},
+                data: {
+                    quantity_available: {
+                        decrement: ticket.quantity
+                    },
+                    status: ''
+                },
+            });
+
+            for (let i = 0; i <= ticket.quantity; i++) {
+
+                const now = new Date();
+                const timestamp = now.toISOString().slice(11, 23).replace(/[:.]/g, ''); // HHmmssSSS
+                const final_qr_id = ticketD.id + req.user.id + order.id + timestamp;
+                const qrData = await QRCode.toDataURL(final_qr_id);
+
+                await prisma.order_Item.create({
+                    data: {
+                        user: {
+                            connect: {
+                                id: req.user.id,
+                            },
+                        },
+                        ticket: {
+                            connect: {
+                                id: ticketD.id,
+                            },
+                        },
+                        order: {
+                            connect: {
+                                id: order.id,
+                            },
+                        },
+                        event: {
+                            connect: {
+                                id: event_id
+                            }
+                        },
+                        price_each: ticket.ticket_price,
+                        currency: currency,
+                        qr: qrData,
+                        isScaned: false,
+                        status: "",
+                    },
+                });
+
+            }
+
+        }
 
         return res.status(200).json({
             status: true,
@@ -322,6 +413,7 @@ exports.bookTicket = async (req, res) => {
 
 
     } catch (e) {
+        console.log(e);
         return res.status(500).json({
             message: e.message,
         });

@@ -2,7 +2,6 @@ const { join } = require('path');
 const { Worker, Queue } = require('bullmq');
 const prisma = require("../config/db");
 
-// Redis connection
 const connection = {
     host: '127.0.0.1',
     port: 6379,
@@ -36,12 +35,12 @@ const worker = new Worker(
     { connection }
 );
 
-// worker.on('completed', (job) => {
-//     console.log(`Job ${job.id} completed`);
-// });
-//
-// worker.on('failed', (job, err) => {
-//     console.error(`Job ${job?.id} failed:`, err);
-// });
+worker.on('completed', (job) => {
+    console.log(`Job ${job.id} completed`);
+});
+
+worker.on('failed', (job, err) => {
+    console.error(`Job ${job?.id} failed:`, err);
+});
 
 module.exports = ticketExpiryQueue;
