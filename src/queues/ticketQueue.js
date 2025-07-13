@@ -36,12 +36,12 @@ const worker = new Worker(
     { connection }
 );
 
-worker.on('completed', (job) => {
-    console.log(`Job ${job.id} completed`);
-});
-
-worker.on('failed', (job, err) => {
-    console.error(`Job ${job?.id} failed:`, err);
-});
+// worker.on('completed', (job) => {
+//     console.log(`Job ${job.id} completed`);
+// });
+//
+// worker.on('failed', (job, err) => {
+//     console.error(`Job ${job?.id} failed:`, err);
+// });
 
 module.exports = ticketExpiryQueue;
