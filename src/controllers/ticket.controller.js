@@ -365,7 +365,7 @@ exports.bookTicket = async (req, res) => {
                 },
             });
 
-            for (let i = 0; i <= ticket.quantity; i++) {
+            for (let i = 1; i <= ticket.quantity; i++) {
 
                 const now = new Date();
                 const timestamp = now.toISOString().slice(11, 23).replace(/[:.]/g, ''); // HHmmssSSS
