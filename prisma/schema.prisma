@@ -102,7 +102,6 @@ model Event {
   event_privacy     String?
   accessibility     Json?
   view_count        Int?
-  service_fee       Int
   created_at        DateTime @default(now())
 
   user     User       @relation(fields: [user_id], references: [id])
