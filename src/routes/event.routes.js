@@ -29,7 +29,7 @@ router.get("/getEventByUser/:userId", authenticateToken, fetchEventsByUser);
 router.get("/getEventById/:eventId", authenticateToken, fetchEventsById);
 router.get("/getEventByTicketId/:ticketId", authenticateToken, fetchEventsByTicketId);
 router.get("/getNearbyEvent", authenticateToken, fetchNearbyEvent);
-router.get("/getTotalEarning/:userId", authenticateToken, fetchTotalEarning);
+router.get("/getTotalEarning/:eventId", authenticateToken, fetchTotalEarning);
 router.get("/getTotalCounts/:eventId", authenticateToken, fetchTotalCount);
 
 module.exports = router;
