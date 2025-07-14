@@ -313,6 +313,8 @@ exports.bookTicket = async (req, res) => {
 
         const {tickets, event_id, total_amount, payment_status, currency} = req.body;
 
+        let totqty = 0;
+
         const order = await prisma.order.create({
             data: {
                 user: {
@@ -342,8 +344,6 @@ exports.bookTicket = async (req, res) => {
                 }
             );
 
-            console.log("ticketD : ", ticketD);
-
             const ticketId = ticketD.id;
 
             if (activeJobs[ticketId]) {
@@ -355,6 +355,9 @@ exports.bookTicket = async (req, res) => {
             }
 
             // Update DB status
+
+            totqty = ticket.quantity;
+
             await prisma.ticket.update({
                 where: {id: ticketId},
                 data: {
@@ -409,6 +412,8 @@ exports.bookTicket = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: "success",
+            booking_id:order.id,
+            total_tickets: totqty
         });
 
 
