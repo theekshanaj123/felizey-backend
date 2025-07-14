@@ -866,55 +866,140 @@ exports.fetchTotalEarning = async (req, res) => {
         }
 
         const [todayTotal, weekTotal, monthTotal] = await Promise.all([
-            prisma.order.aggregate({
-                _sum: {
-                    total_amount: true
-                },
-                where: {
-                    user_id: userId,
-                    event_id: eventId,
-                    created_at: {gte: todayStart, lte: todayEnd},
-                },
-            }),
+            // Today
+            prisma.$queryRaw`
+                SELECT SUM(NULLIF(total_amount, '')::NUMERIC) AS total
+                FROM "Order"
+                WHERE user_id = ${userId}
+                  AND event_id = ${eventId}
+                  AND created_at BETWEEN ${todayStart} AND ${todayEnd}
+            `,
 
-            prisma.order.aggregate({
-                _sum: {
-                    total_amount: true
-                },
-                where: {
-                    user_id: userId,
-                    event_id: eventId,
-                    created_at: {gte: weekStart},
-                },
-            }),
+            // Week
+            prisma.$queryRaw`
+                SELECT SUM(NULLIF(total_amount, '')::NUMERIC) AS total
+                FROM "Order"
+                WHERE user_id = ${userId}
+                  AND event_id = ${eventId}
+                  AND created_at >= ${weekStart}
+            `,
 
-            prisma.order.aggregate({
-                _sum: {
-                    total_amount: true
-                },
-                where: {
-                    user_id: userId,
-                    event_id: eventId,
-                    created_at: {gte: monthStart},
-                },
-            }),
+            // Month
+            prisma.$queryRaw`
+                SELECT SUM(NULLIF(total_amount, '')::NUMERIC) AS total
+                FROM "Order"
+                WHERE user_id = ${userId}
+                  AND event_id = ${eventId}
+                  AND created_at >= ${monthStart}
+            `,
         ]);
 
-        return res.status(200).json({
+        return res.json({
             status: true,
             data: {
-                today: todayTotal._sum.total_amount || 0,
-                week: weekTotal._sum.total_amount || 0,
-                month: monthTotal._sum.total_amount || 0,
-            }
+                today: Number(todayTotal[0]?.total) || 0,
+                week: Number(weekTotal[0]?.total) || 0,
+                month: Number(monthTotal[0]?.total) || 0,
+            },
         });
 
     } catch (e) {
+        console.log(e);
         res.status(500).json({
             message: e.message
         });
     }
 };
+
+// exports.fetchTotalEarning = async (req, res) => {
+//     try {
+//
+//         const todayStart = startOfDay(new Date());
+//         const todayEnd = endOfDay(new Date());
+//         const weekStart = startOfWeek(new Date(), {weekStartsOn: 1});
+//         const monthStart = startOfMonth(new Date());
+//
+//         const userId = req.user.id;
+//         let eventId = req.params.eventId;
+//
+//         if (!eventId) {
+//             const events = await prisma.event.findMany({
+//                 where: {user_id: userId}
+//             });
+//
+//             const eventsWithDateTime = events.map(event => {
+//                 const [year, month, day] = event.start_date.split('-');
+//                 const [hours, minutes] = event.start_time.split(':');
+//                 const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+//
+//                 return {
+//                     ...event,
+//                     startDateTime: dateTime,
+//                 };
+//             });
+//
+//             const now = new Date();
+//             const upcomingEvents = eventsWithDateTime.filter(e => e.startDateTime > now);
+//             upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+//
+//             eventId = upcomingEvents[0]?.id;
+//
+//         }
+//
+//         if (!userId) {
+//             return res.status(500).json({message: 'User ID is required'});
+//         }
+//
+//         const [todayTotal, weekTotal, monthTotal] = await Promise.all([
+//             prisma.order.aggregate({
+//                 _sum: {
+//                     total_amount: true
+//                 },
+//                 where: {
+//                     user_id: userId,
+//                     event_id: eventId,
+//                     created_at: {gte: todayStart, lte: todayEnd},
+//                 },
+//             }),
+//
+//             prisma.order.aggregate({
+//                 _sum: {
+//                     total_amount: true
+//                 },
+//                 where: {
+//                     user_id: userId,
+//                     event_id: eventId,
+//                     created_at: {gte: weekStart},
+//                 },
+//             }),
+//
+//             prisma.order.aggregate({
+//                 _sum: {
+//                     total_amount: true
+//                 },
+//                 where: {
+//                     user_id: userId,
+//                     event_id: eventId,
+//                     created_at: {gte: monthStart},
+//                 },
+//             }),
+//         ]);
+//
+//         return res.status(200).json({
+//             status: true,
+//             data: {
+//                 today: todayTotal._sum.total_amount || 0,
+//                 week: weekTotal._sum.total_amount || 0,
+//                 month: monthTotal._sum.total_amount || 0,
+//             }
+//         });
+//
+//     } catch (e) {
+//         res.status(500).json({
+//             message: e.message
+//         });
+//     }
+// };
 
 exports.fetchTotalCount = async (req, res) => {
     try {
