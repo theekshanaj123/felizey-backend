@@ -1,4 +1,5 @@
 const manageCurrency = require('./currencyConverter');
+const prisma = require("../config/db");
 
 async function filterEvent(toCurrency, event) {
     if (!event) return null;
@@ -19,6 +20,15 @@ async function filterEvent(toCurrency, event) {
                     return null;
                 }
 
+                const ticket = await prisma.ticket.findFirst(
+                    {
+                        where:{
+                            eventId:event.id,
+                            type:category.type
+                        }
+                    }
+                )
+
                 const originalPrice = parsePrice(category.price);
 
                 try {
@@ -31,7 +41,8 @@ async function filterEvent(toCurrency, event) {
                     return {
                         type: category.type || '',
                         description: category.description || '',
-                        qty_available: category.qty_available || 0,
+                        qty: category.qty_available || 0,
+                        qty_available: ticket.qty_available || 0,
                         original_price: category.price,
                         price: result.convertedAmount,
                         original_currency: category?.currency || "USD",

@@ -401,7 +401,7 @@ exports.bookTicket = async (req, res) => {
                         currency: currency,
                         qr: qrData,
                         isScaned: false,
-                        status: "",
+                        status: "Paid",
                     },
                 });
 
