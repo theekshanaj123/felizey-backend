@@ -356,7 +356,7 @@ exports.bookTicket = async (req, res) => {
 
             // Update DB status
 
-            totqty = ticket.quantity;
+            totqty = parseInt(totqty) + parseInt(ticket.quantity);
 
             await prisma.ticket.update({
                 where: {id: ticketId},

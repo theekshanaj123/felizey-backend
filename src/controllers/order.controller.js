@@ -8,7 +8,6 @@ exports.getOrders = async (req, res) => {
             {
                 status: true,
                 order: order
-
             }
         );
 
