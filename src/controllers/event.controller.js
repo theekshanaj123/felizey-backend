@@ -950,16 +950,22 @@ exports.fetchTotalCount = async (req, res) => {
             eventId = upcomingEvents[0]?.id;
         }
 
-        const [allticketsCount, soldTickets, scanedTickets, refunds] = await Promise.all([
+        const event = await prisma.event.findUnique({
+            where: { id: eventId },
+            select: {
+                ticket_categories: true
+            }
+        });
 
-            prisma.ticket.aggregate({
-                _sum: {
-                    quantity_available: true
-                },
-                where: {
-                    eventId: eventId
-                }
-            }),
+        let totalQty = 0;
+
+        event.ticket_categories.forEach((category) => {
+            if (category.qty_available) {
+                totalQty += parseInt(category.qty_available, 10);
+            }
+        });
+
+        const [soldTickets, scanedTickets, refunds] = await Promise.all([
 
             prisma.order_Item.aggregate({
                 _count: true,
@@ -992,7 +998,7 @@ exports.fetchTotalCount = async (req, res) => {
         return res.status(200).json({
             status: true,
             data: {
-                allTicketsCount: allticketsCount._sum.quantity_available || 0,
+                allTicketsCount: totalQty || 0,
                 soldTickets: soldTickets._count || 0,
                 scanedTickets: scanedTickets._count || 0,
                 refunds: refunds._count || 0,
