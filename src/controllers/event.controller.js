@@ -1100,7 +1100,7 @@ exports.fetchTotalCount = async (req, res) => {
 exports.fetchSellingTicketsCountByCategory = async (req, res) => {
     try {
 
-        let {eventId, category} = req.body;
+        let eventId = req.body.eventId;
 
         const userId = req.user.id;
 
@@ -1128,28 +1128,28 @@ exports.fetchSellingTicketsCountByCategory = async (req, res) => {
 
         }
 
+        const event = await prisma.event.findFirst({
+            where: {id: eventId}
+        });
+
         if (!userId) {
             return res.status(500).json({message: 'User ID is required'});
         }
 
-        if (!Array.isArray(category)) {
-            return res.status(500).json({message: 'Category is not an array'});
-        }
-
         const result = await Promise.all(
-            category.map(async (cate) => {
+            event.ticket_categories.map(async (cate) => {
                 const count = await prisma.order_Item.aggregate({
                     _count: true,
                     where: {
                         event_id: eventId,
                         ticket: {
-                            type: cate
+                            type: cate?.type
                         }
                     }
                 });
 
                 return {
-                    category: cate,
+                    category: cate?.type,
                     count: count._count
                 };
             })
