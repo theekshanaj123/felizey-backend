@@ -42,7 +42,7 @@ async function filterEvent(toCurrency, event) {
                         type: category.type || '',
                         description: category.description || '',
                         qty: category.qty_available || 0,
-                        qty_available: ticket.qty_available || 0,
+                        qty_available: ticket.quantity_available || 0,
                         original_price: category.price,
                         price: result.convertedAmount,
                         original_currency: category?.currency || "USD",
