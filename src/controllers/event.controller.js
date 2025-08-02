@@ -1165,35 +1165,40 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const orderData = await prisma.order.findMany({
+    const orderData = await prisma.order_Item.findMany({
       where: { user_id: userId },
     });
 
     if (orderData) {
-      const uniqueOrders = [];
-      const seenEventIds = new Set();
-
-      for (const order of orderData) {
-        if (!seenEventIds.has(order.event_id)) {
-          seenEventIds.add(order.event_id);
-          uniqueOrders.push(order);
-        }
-      }
-
+      
       const events = [];
+      const tickets = [];
 
-      for (const eve of uniqueOrders) {
-        const data = await prisma.event.findFirst({
-          where: { id: eve.event_id },
+      for (const ord of orderData) {
+        const eventData = await prisma.event.findFirst({
+          where: { id: ord.event_id },
         });
-        if (data) {
-          events.push(data);
+
+         const ticketData = await prisma.ticket.findFirst({
+          where: { id: ord.ticket_id },
+        });
+
+        if (eventData) {
+          events.push(eventData);
+        }
+
+        if (ticketData) {
+          tickets.push(ticketData);
         }
       }
 
       return res.status(200).json({
         status: true,
-        data: events,
+        data: {
+            event:events[0],
+            ticket:tickets[0],
+            ticketQuantity:orderData.length
+        },
       });
     } else {
       return res.status(400).json({
