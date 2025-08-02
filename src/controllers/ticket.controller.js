@@ -192,9 +192,9 @@ exports.getTicketByEvent = async (req, res) => {
       },
     });
 
-    if (events) {
+    if (ticketsData) {
       if (ticket) {
-        if (ticketsData) {
+        if (events) {
           return res.status(200).json({
             status: true,
             data: {
