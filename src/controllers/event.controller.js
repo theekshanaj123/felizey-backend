@@ -1170,16 +1170,16 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
     });
 
     if (orderData) {
-      
       const events = [];
       const tickets = [];
+      const seenTicketIds = new Set();
 
       for (const ord of orderData) {
         const eventData = await prisma.event.findFirst({
           where: { id: ord.event_id },
         });
 
-         const ticketData = await prisma.ticket.findFirst({
+        const ticketData = await prisma.ticket.findFirst({
           where: { id: ord.ticket_id },
         });
 
@@ -1188,16 +1188,24 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
         }
 
         if (ticketData) {
-          tickets.push(ticketData);
+          if (!seenTicketIds.has(ticketData.id)) {
+            tickets.push(ticketData);
+            seenTicketIds.add(ticketData.id);
+          }
         }
       }
+
+      const ipDate = await getIp(req);
+      const toCurrency = ipDate?.data?.currency;
+
+      const processedEvents = await manageEvent(toCurrency, events[0]);
 
       return res.status(200).json({
         status: true,
         data: {
-            event:events[0],
-            ticket:tickets[0],
-            ticketQuantity:orderData.length
+          event: processedEvents,
+          ticket: tickets,
+          ticketQuantity: orderData.length,
         },
       });
     } else {
