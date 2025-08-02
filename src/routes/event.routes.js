@@ -11,7 +11,8 @@ const { createEvent, updateEvent, deleteEvent, fetchEventsByCategory, fetchRando
     fetchTotalEarning,
     fetchTotalCount,
     fetchSellingTicketsCountByCategory,
-    fetchEventsByTicketId
+    fetchEventsByTicketId,
+    fetchAllEventByUserTicket
 } = require("../controllers/event.controller");
 
 router.post("/createEvent", authenticateToken, createEvent);
@@ -31,5 +32,6 @@ router.get("/getEventByTicketId/:ticketId", authenticateToken, fetchEventsByTick
 router.get("/getNearbyEvent", authenticateToken, fetchNearbyEvent);
 router.get("/getTotalEarning/:eventId", authenticateToken, fetchTotalEarning);
 router.get("/getTotalCounts/:eventId", authenticateToken, fetchTotalCount);
+router.get("/getAllEventsByUserTickets", authenticateToken, fetchAllEventByUserTicket);
 
 module.exports = router;

@@ -1,4 +1,3 @@
-const { join } = require('path');
 const { Worker, Queue } = require('bullmq');
 const prisma = require("../config/db");
 
