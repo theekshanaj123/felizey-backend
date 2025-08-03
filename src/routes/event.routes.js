@@ -12,7 +12,8 @@ const { createEvent, updateEvent, deleteEvent, fetchEventsByCategory, fetchRando
     fetchTotalCount,
     fetchSellingTicketsCountByCategory,
     fetchEventsByTicketId,
-    fetchAllEventByUserTicket
+    fetchAllEventByUserTicket,
+    fetchEventsAdvancedByUser
 } = require("../controllers/event.controller");
 
 router.post("/createEvent", authenticateToken, createEvent);
@@ -26,6 +27,7 @@ router.get("/getLetestEvent", authenticateToken, fetchLetestEvents);
 router.get("/getPopularEvent", authenticateToken, fetchPopularEvents);
 router.get("/getRandomEvent", authenticateToken, fetchRandomizedEvents);
 router.get("/getEventAdvanceSearch", authenticateToken, fetchEventsAdvanced);
+router.get("/getEventAdvanceSearchByUser", authenticateToken, fetchEventsAdvancedByUser);
 router.get("/getEventByUser/:userId", authenticateToken, fetchEventsByUser);
 router.get("/getEventById/:eventId", authenticateToken, fetchEventsById);
 router.get("/getEventByTicketId/:ticketId", authenticateToken, fetchEventsByTicketId);

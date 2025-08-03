@@ -200,7 +200,7 @@ exports.updateEvent = async (req, res) => {
       "title",
       "description",
       "image_url",
-      "banner_video_url",
+      // "banner_video_url",
       "address",
       "location",
       "country",
@@ -212,15 +212,15 @@ exports.updateEvent = async (req, res) => {
       "end_date",
       "end_time",
       "category",
-      "tags",
-      "external_link",
+      // "tags",
+      // "external_link",
       "attendees_count",
       "max_attendees",
       "is_online",
       "visibility",
       "age_limit",
       "parking",
-      "language",
+      // "language",
       "ticket_categories",
       "ticket_status",
       "event_type",
@@ -468,6 +468,8 @@ exports.fetchEventsAdvanced = async (req, res) => {
       orderBy: {
         created_at: "desc",
       },
+      take: 5,
+      skip: parseInt(skip),
     });
 
     const ipDate = await getIp(req);
@@ -480,6 +482,34 @@ exports.fetchEventsAdvanced = async (req, res) => {
     return res.status(200).json({
       status: true,
       event: processedEvents,
+      user: users,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+exports.fetchEventsAdvancedByUser = async (req, res) => {
+  try {
+    const { title, skip } = req.query;
+
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { firstName: { contains: title, mode: "insensitive" } },
+          { lastName: { contains: title, mode: "insensitive" } },
+        ],
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+      take: 5,
+      skip: parseInt(skip),
+    });
+
+    return res.status(200).json({
+      status: true,
       user: users,
     });
   } catch (error) {
