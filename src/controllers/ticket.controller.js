@@ -192,16 +192,41 @@ exports.getTicketByEvent = async (req, res) => {
       },
     });
 
+    const userData = await prisma.user.findFirst({
+      where: {
+        id: events.user_id,
+      },
+    });
+
+    const dataArray = [];
+
+    for (const dt of ticketsData) {
+      const json = {
+        ticket: {
+          event: {
+            title: events.title,
+            body: events.description,
+            image_url: events.image_url,
+            start_date: events.start_date,
+            estart_time: events.start_time,
+            address: events.address,
+            payment_status: dt.status,
+          },
+          ticket_id: ticket.id,
+          user_name: `${userData.firstName} ${userData.lastName}`,
+          purchase_date: dt.created_at,
+          qr_code: dt.qr,
+        },
+      };
+      dataArray.push(json);
+    }
+
     if (ticketsData) {
       if (ticket) {
         if (events) {
           return res.status(200).json({
             status: true,
-            data: {
-              ticket: ticket,
-              event: events,
-              ticketData: ticketsData,
-            },
+            data: dataArray,
           });
         }
       }
