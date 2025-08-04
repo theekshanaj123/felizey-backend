@@ -1107,10 +1107,22 @@ exports.fetchTotalCount = async (req, res) => {
     return res.status(200).json({
       status: true,
       data: {
-        allTicketsCount: totalQty || 0,
-        soldTickets: soldTickets._count || 0,
-        scanedTickets: scanedTickets._count || 0,
-        refunds: refunds._count || 0,
+        allTicketsCount: {
+          count: totalQty || 0,
+          percentage: parseFloat(parseFloat((totalQty || 0)/totalQty) * 100),
+        },
+        soldTickets: {
+          count:soldTickets._count || 0,
+          percentage: parseFloat(parseFloat((soldTickets._count || 0)/totalQty) * 100),
+        },
+        scanedTickets: {
+          count:scanedTickets._count || 0,
+          percentage: parseFloat(parseFloat((scanedTickets._count || 0)/totalQty) * 100),
+        },
+        refunds: {
+          count:refunds._count || 0,
+          percentage: parseFloat(parseFloat((refunds._count || 0)/totalQty) * 100),
+        },
       },
     });
   } catch (e) {
