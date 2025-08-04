@@ -1106,24 +1106,38 @@ exports.fetchTotalCount = async (req, res) => {
 
     return res.status(200).json({
       status: true,
-      data: {
-        allTicketsCount: {
+      data: [
+        {
+          label: "Generated Count",
           count: totalQty || 0,
-          percentage: parseFloat(parseFloat((totalQty || 0)/totalQty) * 100),
+          percentage: parseFloat(parseFloat((totalQty || 0) / totalQty) * 100),
+          color: "#4F46E5",
         },
-        soldTickets: {
-          count:soldTickets._count || 0,
-          percentage: parseFloat(parseFloat((soldTickets._count || 0)/totalQty) * 100),
+        {
+          label: "Generated Count",
+          count: soldTickets._count || 0,
+          percentage: parseFloat(
+            parseFloat((soldTickets._count || 0) / totalQty) * 100
+          ),
+          color: "#10B981",
         },
-        scanedTickets: {
-          count:scanedTickets._count || 0,
-          percentage: parseFloat(parseFloat((scanedTickets._count || 0)/totalQty) * 100),
+        {
+          label: "Scanned Count",
+          count: scanedTickets._count || 0,
+          percentage: parseFloat(
+            parseFloat((scanedTickets._count || 0) / totalQty) * 100
+          ),
+          color: "#EC4899",
         },
-        refunds: {
-          count:refunds._count || 0,
-          percentage: parseFloat(parseFloat((refunds._count || 0)/totalQty) * 100),
+        {
+          label: "Refunds",
+          count: refunds._count || 0,
+          percentage: parseFloat(
+            parseFloat((refunds._count || 0) / totalQty) * 100
+          ),
+          color: "#0EA5E9",
         },
-      },
+      ],
     });
   } catch (e) {
     return res.status(500).json({
@@ -1218,7 +1232,7 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
         const eventData = await prisma.event.findFirst({
           where: { id: ord.event_id },
         });
-     
+
         const j = {
           id: eventData.id,
           title: eventData.title,
