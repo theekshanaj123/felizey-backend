@@ -110,35 +110,35 @@ exports.updateUser = async (req, res) => {
         if (!firstName) {
             return res.status(400).json({message: "First Name is Required."});
         }
-        if (!lastName) {
-            return res.status(400).json({message: "Last Name is Required."});
-        }
-        if (!role) {
-            return res.status(400).json({message: "Role is Required."});
-        }
-        if (!avatar_url) {
-            return res.status(400).json({message: "Avatar URL is Required."});
-        }
+        // if (!lastName) {
+        //     return res.status(400).json({message: "Last Name is Required."});
+        // }
+        // if (!role) {
+        //     return res.status(400).json({message: "Role is Required."});
+        // }
+        // if (!avatar_url) {
+        //     return res.status(400).json({message: "Avatar URL is Required."});
+        // }
         if (!email) {
             return res.status(400).json({message: "Email is Required."});
         }
-        if (!phoneNumber) {
-            return res.status(400).json({message: "Phone Number is Required."});
-        }
+        // if (!phoneNumber) {
+        //     return res.status(400).json({message: "Phone Number is Required."});
+        // }
         if (!bio) {
             return res.status(400).json({message: "Bio is Required."});
         }
         if (!country) {
             return res.status(400).json({message: "Country is Required."});
         }
-        if (!instagram) {
-            return res
-                .status(400)
-                .json({message: "Instagram Username is Required."});
-        }
-        if (!tiktok) {
-            return res.status(400).json({message: "Tiktok Username is Required."});
-        }
+        // if (!instagram) {
+        //     return res
+        //         .status(400)
+        //         .json({message: "Instagram Username is Required."});
+        // }
+        // if (!tiktok) {
+        //     return res.status(400).json({message: "Tiktok Username is Required."});
+        // }
 
         const updateUser = await prisma.user.update({
             where: {
