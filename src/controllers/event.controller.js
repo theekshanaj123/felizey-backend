@@ -1114,7 +1114,7 @@ exports.fetchTotalCount = async (req, res) => {
           color: "#4F46E5",
         },
         {
-          label: "Generated Count",
+          label: "Sold Count",
           count: soldTickets._count || 0,
           percentage: parseFloat(
             parseFloat((soldTickets._count || 0) / totalQty) * 100
