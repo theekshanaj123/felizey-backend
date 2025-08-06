@@ -2,6 +2,7 @@ const prisma = require("../config/db");
 const manageEvent = require("../services/manageEvent");
 const getIp = require("../services/getIp");
 const { startOfDay, endOfDay, startOfWeek, startOfMonth } = require("date-fns");
+const { convertEventResCurrency } = require("../services/currencyConverter");
 
 exports.createEvent = async (req, res) => {
   try {
@@ -321,38 +322,38 @@ exports.deleteEvent = async (req, res) => {
       return res.status(400).json({ message: "Event ID is required." });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: req.user.email },
-    });
+    // const user = await prisma.user.findUnique({
+    //   where: { email: req.user.email },
+    // });
 
-    if (!user) {
-      return res.status(400).json({ message: "User Not Found." });
-    }
+    // if (!user) {
+    //   return res.status(400).json({ message: "User Not Found." });
+    // }
 
-    // Check if event exists
-    const event = await prisma.event.findUnique({
-      where: {
-        id: id, // Ensure the 'id' is passed here
-      },
-    });
+    // // Check if event exists
+    // const event = await prisma.event.findUnique({
+    //   where: {
+    //     id: id, // Ensure the 'id' is passed here
+    //   },
+    // });
 
-    if (!event) {
-      return res.status(404).json({ message: "Event Not Found." });
-    }
+    // if (!event) {
+    //   return res.status(404).json({ message: "Event Not Found." });
+    // }
 
-    // Delete associated tickets
-    await prisma.ticket.deleteMany({
-      where: {
-        eventId: id,
-      },
-    });
+    // // Delete associated tickets
+    // await prisma.ticket.deleteMany({
+    //   where: {
+    //     eventId: id,
+    //   },
+    // });
 
-    // Delete the event
-    await prisma.event.delete({
-      where: {
-        id: id,
-      },
-    });
+    // // Delete the event
+    // await prisma.event.delete({
+    //   where: {
+    //     id: id,
+    //   },
+    // });
 
     return res.status(200).json({
       status: true,
@@ -382,11 +383,28 @@ exports.fetchEventsByCategory = async (req, res) => {
       },
     });
 
+    const eventsWithDateTime = events.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
     const ipDate = await getIp(req);
     const toCurrency = ipDate?.data?.currency;
 
     const processedEvents = await Promise.all(
-      events.map((event) => manageEvent(toCurrency, event))
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -412,11 +430,28 @@ exports.fetchRandomizedEvents = async (req, res) => {
       [events[i], events[j]] = [events[j], events[i]];
     }
 
+    const eventsWithDateTime = events.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
     const ipDate = await getIp(req);
     const toCurrency = ipDate?.data?.currency;
 
     const processedEvents = await Promise.all(
-      events.map((event) => manageEvent(toCurrency, event))
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -472,11 +507,28 @@ exports.fetchEventsAdvanced = async (req, res) => {
       skip: parseInt(skip),
     });
 
+    const eventsWithDateTime = events.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
     const ipDate = await getIp(req);
     const toCurrency = ipDate?.data?.currency;
 
     const processedEvents = await Promise.all(
-      events.map((event) => manageEvent(toCurrency, event))
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -540,6 +592,57 @@ exports.fetchEventsByUser = async (req, res) => {
 
     const processedEvents = await Promise.all(
       events.map((event) => manageEvent(toCurrency, event))
+    );
+
+    return res.status(200).json({
+      status: true,
+      data: processedEvents,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+exports.fetchFutureEventsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    const events = await prisma.event.findMany({
+      where: {
+        user_id: userId,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+
+    const eventsWithDateTime = events.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
+    const ipDate = await getIp(req);
+    const toCurrency = ipDate?.data?.currency;
+
+    const processedEvents = await Promise.all(
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -648,11 +751,28 @@ exports.fetchAllEvents = async (req, res) => {
   try {
     const events = await prisma.event.findMany();
 
+    const eventsWithDateTime = events.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
     const ipDate = await getIp(req);
     const toCurrency = ipDate?.data?.currency;
 
     const processedEvents = await Promise.all(
-      events.map((event) => manageEvent(toCurrency, event))
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -674,11 +794,28 @@ exports.fetchLetestEvents = async (req, res) => {
       },
     });
 
+    const eventsWithDateTime = events.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
     const ipDate = await getIp(req);
     const toCurrency = ipDate?.data?.currency;
 
     const processedEvents = await Promise.all(
-      events.map((event) => manageEvent(toCurrency, event))
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -729,11 +866,28 @@ exports.fetchPopularEvents = async (req, res) => {
     // Limit to top 10
     const mostPopularEvents = sortedEvents.slice(0, 10);
 
+    const eventsWithDateTime = mostPopularEvents.map((event) => {
+      const [year, month, day] = event.start_date.split("-");
+      const [hours, minutes] = event.start_time.split(":");
+      const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+      return {
+        ...event,
+        startDateTime: dateTime,
+      };
+    });
+
+    const now = new Date();
+    const upcomingEvents = eventsWithDateTime.filter(
+      (e) => e.startDateTime > now
+    );
+    upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
     const ipDate = await getIp(req);
     const toCurrency = ipDate?.data?.currency;
 
     const processedEvents = await Promise.all(
-      mostPopularEvents.map((event) => manageEvent(toCurrency, event))
+      upcomingEvents.map((event) => manageEvent(toCurrency, event))
     );
 
     return res.status(200).json({
@@ -924,6 +1078,72 @@ exports.fetchTotalEarning = async (req, res) => {
         week: Number(weekTotal[0]?.total) || 0,
         month: Number(monthTotal[0]?.total) || 0,
       },
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+exports.fetchTotalEventEarning = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let eventId = req.params.eventId;
+
+    if (!eventId) {
+      const events = await prisma.event.findMany({
+        where: { user_id: userId },
+      });
+
+      const eventsWithDateTime = events.map((event) => {
+        const [year, month, day] = event.start_date.split("-");
+        const [hours, minutes] = event.start_time.split(":");
+        const dateTime = new Date(
+          Date.UTC(year, month - 1, day, hours, minutes)
+        );
+
+        return {
+          ...event,
+          startDateTime: dateTime,
+        };
+      });
+
+      const now = new Date();
+      const upcomingEvents = eventsWithDateTime.filter(
+        (e) => e.startDateTime > now
+      );
+      upcomingEvents.sort((a, b) => a.startDateTime - b.startDateTime);
+
+      eventId = upcomingEvents[0]?.id;
+    }
+
+    if (!userId) {
+      return res.status(500).json({ message: "User ID is required" });
+    }
+
+    const event = await prisma.event.findFirst({ where: { id: eventId } });
+
+    const finalTicketData = [];
+
+    for (const data of event.ticket_categories) {
+      const json = {
+        type: data.type,
+        price: data.price,
+        currency: data.currency,
+        description: data.description,
+        qty_available: data.qty_available,
+        totalPrice: parseFloat(
+          parseFloat(data.price) * parseFloat(data.qty_available)
+        ),
+      };
+      finalTicketData.push(json);
+    }
+
+    return res.json({
+      status: true,
+      data: finalTicketData,
     });
   } catch (e) {
     console.log(e);

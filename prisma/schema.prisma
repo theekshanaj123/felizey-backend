@@ -57,7 +57,7 @@ model User_Role {
 
 model Ticket {
   id                 String   @id @default(uuid())
-  eventId            String
+  eventId            String   @map("eventId")
   type               String?
   price              String?
   quantity_available Int?

@@ -176,13 +176,7 @@ exports.getTicketByEvent = async (req, res) => {
       },
     });
 
-    const ticket = await prisma.ticket.findMany({
-      where: {
-        event: {
-          id: eventId,
-        },
-      },
-    });
+    
 
     const ticketsData = await prisma.order_Item.findMany({
       where: {
@@ -201,6 +195,13 @@ exports.getTicketByEvent = async (req, res) => {
     const dataArray = [];
 
     for (const dt of ticketsData) {
+
+      const ticket = await prisma.ticket.findFirst({
+      where: {
+        id:dt.ticket_id
+      },
+    });
+
       const json = {
         ticket: {
           event: {
@@ -216,20 +217,19 @@ exports.getTicketByEvent = async (req, res) => {
           user_name: `${userData.firstName} ${userData.lastName}`,
           purchase_date: dt.created_at,
           qr_code: dt.qr,
+          ticket_type:ticket.type
         },
       };
       dataArray.push(json);
     }
 
     if (ticketsData) {
-      if (ticket) {
         if (events) {
           return res.status(200).json({
             status: true,
             data: dataArray,
           });
         }
-      }
     } else {
       return res.status(400).json({
         status: false,
@@ -393,7 +393,6 @@ exports.bookTicket = async (req, res) => {
       }
 
       // Update DB status
-
       totqty = parseInt(totqty) + parseInt(ticket.quantity);
 
       await prisma.ticket.update({

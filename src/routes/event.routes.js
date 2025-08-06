@@ -13,7 +13,9 @@ const { createEvent, updateEvent, deleteEvent, fetchEventsByCategory, fetchRando
     fetchSellingTicketsCountByCategory,
     fetchEventsByTicketId,
     fetchAllEventByUserTicket,
-    fetchEventsAdvancedByUser
+    fetchEventsAdvancedByUser,
+    fetchFutureEventsByUser,
+    fetchTotalEventEarning
 } = require("../controllers/event.controller");
 
 router.post("/createEvent", authenticateToken, createEvent);
@@ -29,10 +31,12 @@ router.get("/getRandomEvent", authenticateToken, fetchRandomizedEvents);
 router.get("/getEventAdvanceSearch", authenticateToken, fetchEventsAdvanced);
 router.get("/getEventAdvanceSearchByUser", authenticateToken, fetchEventsAdvancedByUser);
 router.get("/getEventByUser/:userId", authenticateToken, fetchEventsByUser);
+router.get("/getFutureEventByUser/:userId", authenticateToken, fetchFutureEventsByUser);
 router.get("/getEventById/:eventId", authenticateToken, fetchEventsById);
 router.get("/getEventByTicketId/:ticketId", authenticateToken, fetchEventsByTicketId);
 router.get("/getNearbyEvent", authenticateToken, fetchNearbyEvent);
 router.get("/getTotalEarning/:eventId", authenticateToken, fetchTotalEarning);
+router.get("/getTotalEventEarning/:eventId", authenticateToken, fetchTotalEventEarning);
 router.get("/getTotalCounts/:eventId", authenticateToken, fetchTotalCount);
 router.get("/getAllEventsByUserTickets", authenticateToken, fetchAllEventByUserTicket);
 

@@ -1,5 +1,8 @@
 const express = require("express");
 const app = express();
+const http = require("http");
+const { Server } = require("socket.io");
+
 const authRoutes = require("./routes/auth.routes");
 const passwordRoutes = require("./routes/password.routes");
 const userRoutes = require("./routes/user.routes");
@@ -11,13 +14,21 @@ const ticketRoutes = require("./routes/ticket.routes");
 const memberRoutes = require("./routes/member.routes");
 const cronRoutes = require("./routes/cron.routes");
 const organizerRoutes = require("./routes/organizer.routes");
+
+const eventSocketHandler = require("./socketHandlers/eventSocket");
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" },
+});
+
 const cors = require('cors');
+
 require("dotenv").config();
 
 app.set("trust proxy", true);
 
 app.use(cors());
-
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/password", passwordRoutes);
@@ -33,6 +44,18 @@ app.use("/api/cron", cronRoutes);
 
 app.get("/api", (req, res) => {
   res.send("api working..");
+});
+
+// Socket.io connection
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  // Attach our event socket handlers
+  eventSocketHandler(socket);
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  })
 });
 
 const PORT = process.env.PORT;
