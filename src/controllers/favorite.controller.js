@@ -11,14 +11,37 @@ exports.addFavorite = async (req, res) => {
       return res.status(400).json({ message: "Event_id is required." });
     }
 
-    const favorite = await prisma.favorite.create({
-      data: {
-        user_id,
-        event_id,
+    const isExist = await prisma.favorite.findFirst({
+      where: {
+        event_id: event_id,
+        user_id: user_id,
       },
     });
 
-    return res.status(201).json({ status: true, favorite });
+    if (isExist) {
+      await prisma.favorite.delete({ where: { id: isExist.id } });
+
+      return res
+        .status(200)
+        .json({ status: true, message: "Favorite deleted." });
+    } else {
+      const favorite = await prisma.favorite.create({
+        data: {
+          user: {
+            connect: {
+              id: user_id,
+            },
+          },
+          event: {
+            connect: {
+              id: event_id,
+            },
+          },
+        },
+      });
+
+      return res.status(200).json({ status: true, message: "Favorite Added." });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
