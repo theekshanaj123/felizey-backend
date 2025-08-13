@@ -10,24 +10,24 @@ exports.scanTicket = async (req, res) => {
     const { code } = req.params;
 
     if (!code) {
-      return res.status(500).json({
+      return res.status(400).json({
         message: "QR Code Missing.",
       });
     }
 
-    const ticket = await prisma.order_Item.findUnique({ where: { qr: code } });
+    const ticket = await prisma.order_Item.findFirst({ where: { id: code } });
 
     if (!ticket) {
-      return res.status(500).json({
+      return res.status(400).json({
         message: "Ticket Not Found.",
       });
     }
 
     if (ticket?.isScaned) {
-      return res.status(500).json({
+      return res.status(400).json({
         status: false,
         message: "Ticket Already Scaned.",
-        data: ticket,
+        // data: ticket,
       });
     } else {
       const updateStatus = await prisma.order_Item.update({

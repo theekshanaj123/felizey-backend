@@ -233,7 +233,7 @@ exports.addNewRole = async (req, res) => {
 
     const user = await prisma.user.findFirst({ where: { email: email } });
 
-    if (user) {
+    if (!user) {
       return res.status(400).json({
         message: "User not found.",
       });
