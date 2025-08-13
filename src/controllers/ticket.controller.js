@@ -15,7 +15,7 @@ exports.scanTicket = async (req, res) => {
       });
     }
 
-    const ticket = await prisma.order_Item.findFirst({ where: { id: code } });
+    const ticket = await prisma.order_Item.findFirst({ where: { qr_code: code } });
 
     if (!ticket) {
       return res.status(400).json({
@@ -435,6 +435,7 @@ exports.bookTicket = async (req, res) => {
             },
             price_each: ticket.ticket_price,
             currency: currency,
+            qr_code: final_qr_id,
             qr: qrData,
             isScaned: false,
             status: "Paid",

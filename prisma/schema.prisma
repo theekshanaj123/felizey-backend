@@ -150,6 +150,7 @@ model Order_Item {
   event_id   String
   price_each String
   currency   String
+  qr_code    String
   qr         String
   isScaned   Boolean
   status     String
