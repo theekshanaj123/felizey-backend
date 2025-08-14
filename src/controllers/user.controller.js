@@ -306,7 +306,9 @@ exports.getAllRoleByEventId = async (req, res) => {
 
         const isExist = await prisma.user_Role.findFirst({
             where: {
-                event_id: event_id,
+                event:{
+                    id: event_id
+                },
             },
         });
 
