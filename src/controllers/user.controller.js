@@ -288,9 +288,9 @@ exports.addNewRole = async (req, res) => {
 
 exports.getAllRoleByEventId = async (req, res) => {
     try {
-        const {event_id} = req.params;
+        const {eventId} = req.params;
 
-        const resquredFields = ["event_id"];
+        const resquredFields = ["eventId"];
 
         for (const field of resquredFields) {
             if (
@@ -307,7 +307,7 @@ exports.getAllRoleByEventId = async (req, res) => {
         const isExist = await prisma.user_Role.findFirst({
             where: {
                 event:{
-                    id: event_id
+                    id: eventId
                 },
             },
         });

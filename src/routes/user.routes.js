@@ -11,7 +11,7 @@ router.get("/updateEmailSend", authenticateToken, updateUserEmailSend);
 router.get("/getUserById", authenticateToken, getUser);
 router.get("/getUser", authenticateToken, getUserByToken);
 router.get("/deleteUser", authenticateToken, deleteUserById);
-router.get("/getAllRolesByEventId/:event_id", authenticateToken, getAllRoleByEventId);
+router.get("/getAllRolesByEventId/:eventId", authenticateToken, getAllRoleByEventId);
 router.post("/updateEmail", authenticateToken, updateEmail);
 router.post("/updateUserById", authenticateToken, updateUser);
 router.post("/addNewroll", authenticateToken, addNewRole);
