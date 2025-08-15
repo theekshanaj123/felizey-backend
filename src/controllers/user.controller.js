@@ -290,7 +290,7 @@ exports.getAllRoleByEventId = async (req, res) => {
     try {
         const {eventId} = req.params;
 
-        console.log("aaaaaaaaaaaa",eventId);
+        console.log("aaaaaaaaaaaa", eventId);
 
         const resquredFields = ["eventId"];
 
@@ -308,7 +308,7 @@ exports.getAllRoleByEventId = async (req, res) => {
 
         const isExist = await prisma.user_Role.findFirst({
             where: {
-                event_id:eventId
+                event_id: eventId
             },
         });
 
@@ -325,6 +325,30 @@ exports.getAllRoleByEventId = async (req, res) => {
     } catch (e) {
         console.error(e);
         return res.status(400).json({message: e.message});
+    }
+};
+
+exports.getUserRolls = async (req, res) => {
+    try {
+
+        const userRolls = await prisma.user_Role.findMany({where: {user_id: req.user.id}});
+
+        if(userRolls){
+            return res.status(200).json({
+                status: true,
+                message: "success",
+                data: userRolls,
+            });
+        }else{
+            return res.status(400).json({
+                status: true,
+                message: "Not Rolls Found.",
+            });
+        }
+
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({message: e.message});
     }
 };
 

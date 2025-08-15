@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authenticateToken = require("../middleware/authenticateToken");
 const { updateUserEmailSend, updateEmail, getUser, updateUser, getUserByToken, deleteUserById, addNewRole,
-    getUserRoleByEventId, getAllRoleByEventId, removeUserRoleByEventId
+    getUserRoleByEventId, getAllRoleByEventId, removeUserRoleByEventId, getUserRolls
 } = require("../controllers/user.controller");
 
 
@@ -12,6 +12,7 @@ router.get("/getUserById", authenticateToken, getUser);
 router.get("/getUser", authenticateToken, getUserByToken);
 router.get("/deleteUser", authenticateToken, deleteUserById);
 router.get("/getAllRolesByEventId/:eventId", authenticateToken, getAllRoleByEventId);
+router.get("/getUserRolls", authenticateToken, getUserRolls);
 router.post("/updateEmail", authenticateToken, updateEmail);
 router.post("/updateUserById", authenticateToken, updateUser);
 router.post("/addNewroll", authenticateToken, addNewRole);
