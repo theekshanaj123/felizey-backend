@@ -3,6 +3,7 @@ const manageEvent = require("../services/manageEvent");
 const getIp = require("../services/getIp");
 const { startOfDay, endOfDay, startOfWeek, startOfMonth } = require("date-fns");
 const { convertEventResCurrency } = require("../services/currencyConverter");
+const sendEmail = require("../services/emailSender");
 
 exports.createEvent = async (req, res) => {
   try {
@@ -322,24 +323,34 @@ exports.deleteEvent = async (req, res) => {
       return res.status(400).json({ message: "Event ID is required." });
     }
 
-    // const user = await prisma.user.findUnique({
-    //   where: { email: req.user.email },
-    // });
+    const user = await prisma.user.findUnique({
+      where: { email: req.user.email },
+    });
 
-    // if (!user) {
-    //   return res.status(400).json({ message: "User Not Found." });
-    // }
+    if (!user) {
+      return res.status(400).json({ message: "User Not Found." });
+    }
 
-    // // Check if event exists
-    // const event = await prisma.event.findUnique({
-    //   where: {
-    //     id: id, // Ensure the 'id' is passed here
-    //   },
-    // });
+    // Check if event exists
+    const event = await prisma.event.findUnique({
+      where: {
+        id: id, // Ensure the 'id' is passed here
+      },
+    });
 
-    // if (!event) {
-    //   return res.status(404).json({ message: "Event Not Found." });
-    // }
+    if (!event) {
+      return res.status(404).json({ message: "Event Not Found." });
+    }
+
+    const sendMail = await sendEmail(
+        process.env.GMAIL_USER,
+        "Event Delete",
+        `${event.title} was Deleted by ${user.firstName} ${user.lastName}`
+    );
+
+    if (sendMail.error) {
+      return res.status(400).json({ message: sendMail.message });
+    }
 
     // // Delete associated tickets
     // await prisma.ticket.deleteMany({
