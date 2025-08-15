@@ -290,13 +290,15 @@ exports.getAllRoleByEventId = async (req, res) => {
     try {
         const {eventId} = req.params;
 
+        console.log("aaaaaaaaaaaa",eventId);
+
         const resquredFields = ["eventId"];
 
         for (const field of resquredFields) {
             if (
-                req.body[field] === undefined ||
-                req.body[field] === null ||
-                req.body[field] === ""
+                req.params[field] === undefined ||
+                req.params[field] === null ||
+                req.params[field] === ""
             ) {
                 return res.status(400).json({
                     message: field + " is missing.",
@@ -306,9 +308,7 @@ exports.getAllRoleByEventId = async (req, res) => {
 
         const isExist = await prisma.user_Role.findFirst({
             where: {
-                event:{
-                    id: eventId
-                },
+                event_id:eventId
             },
         });
 
