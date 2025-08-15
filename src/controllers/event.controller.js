@@ -1453,16 +1453,28 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
           where: { id: ord.event_id },
         });
 
-        const j = {
-          id: eventData.id,
-          title: eventData.title,
-          date: eventData.start_date,
-          image: eventData.image_url,
-          time: eventData.start_time,
-          ticket: ord.categories,
-        };
+        if (!eventData) continue;
 
-        events.push(j);
+        const existingEventIndex = events.findIndex(e => e.id === eventData.id);
+
+        const ticketData = ord.categories;
+
+        if (existingEventIndex > -1) {
+          events[existingEventIndex].ticket = [
+            ...events[existingEventIndex].ticket,
+            ...ticketData,
+          ];
+        } else {
+          const j = {
+            id: eventData.id,
+            title: eventData.title,
+            date: eventData.start_date,
+            image: eventData.image_url,
+            time: eventData.start_time,
+            ticket: Array.isArray(ticketData) ? [...ticketData] : [ticketData],
+          };
+          events.push(j);
+        }
       }
 
       return res.status(200).json({
