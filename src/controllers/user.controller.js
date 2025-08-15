@@ -288,7 +288,7 @@ exports.addNewRole = async (req, res) => {
 
 exports.getAllRoleByEventId = async (req, res) => {
     try {
-        const {event_id} = req.query;
+        const {event_id} = req.params;
 
         const resquredFields = ["event_id"];
 
