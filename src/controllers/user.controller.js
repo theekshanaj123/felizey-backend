@@ -440,18 +440,18 @@ exports.removeUserRoleByEventId = async (req, res) => {
         });
 
         if (isExist) {
-            // const data = await prisma.user_Role.delete(
-            //     {
-            //         where: {
-            //             user_id: user_id,
-            //             event_id: event_id
-            //         }
-            //     }
-            // )
+            const data = await prisma.user_Role.delete(
+                {
+                    where: {
+                        user_id: user_id,
+                        event_id: event_id
+                    }
+                }
+            )
 
             return res.status(200).json({
                 status: true,
-                message: "In Progres..",
+                // message: "In Progres..",
             });
         }
         return res.status(400).json({
