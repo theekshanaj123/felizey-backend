@@ -290,8 +290,6 @@ exports.getAllRoleByEventId = async (req, res) => {
     try {
         const {eventId} = req.params;
 
-        console.log("aaaaaaaaaaaa", eventId);
-
         const resquredFields = ["eventId"];
 
         for (const field of resquredFields) {
@@ -306,17 +304,38 @@ exports.getAllRoleByEventId = async (req, res) => {
             }
         }
 
-        const isExist = await prisma.user_Role.findFirst({
+        const isExist = await prisma.user_Role.findMany({
             where: {
                 event_id: eventId
             },
         });
 
         if (isExist) {
+
+            const data = [];
+
+            for (const d of isExist) {
+
+                const user = await prisma.user.findFirst({
+                    where: {
+                        id: d.user_id
+                    }
+                })
+
+                const json = {
+                    id:user.id,
+                    userName: user.firstName + " " + user.lastName,
+                    role:d.role,
+                    imageUrl:user.avatar_url,
+                };
+
+                data.push(json);
+            }
+
             return res.status(200).json({
                 status: true,
                 message: "success",
-                data: isExist,
+                data: data,
             });
         }
         return res.status(400).json({
@@ -333,13 +352,13 @@ exports.getUserRolls = async (req, res) => {
 
         const userRolls = await prisma.user_Role.findMany({where: {user_id: req.user.id}});
 
-        if(userRolls){
+        if (userRolls) {
             return res.status(200).json({
                 status: true,
                 message: "success",
                 data: userRolls,
             });
-        }else{
+        } else {
             return res.status(400).json({
                 status: true,
                 message: "Not Rolls Found.",
