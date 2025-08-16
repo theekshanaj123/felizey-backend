@@ -46,6 +46,16 @@ app.get("/api", (req, res) => {
   res.send("api working..");
 });
 
+// Handle GET /
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', method: 'GET' });
+});
+
+// Handle POST /
+app.post('/', (req, res) => {
+  res.json({ status: 'Created', data: req.body });
+});
+
 // Socket.io connection
 io.on("connection", (socket) => {
   console.log("Client connected:", socket.id);
