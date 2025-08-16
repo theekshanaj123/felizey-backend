@@ -416,7 +416,7 @@ exports.getUserRoleByEventId = async (req, res) => {
 
 exports.removeUserRoleByEventId = async (req, res) => {
     try {
-        const {event_id, user_id} = req.query;
+        const {event_id, user_id} = req.body;
 
         const resquredFields = ["event_id", "user_id"];
 
@@ -440,14 +440,20 @@ exports.removeUserRoleByEventId = async (req, res) => {
         });
 
         if (isExist) {
-            const data = await prisma.user_Role.delete(
-                {
+            const userRole = await prisma.user_Role.findFirst({
+                where: {
+                    user_id: user_id,
+                    event_id: event_id,
+                },
+            });
+
+            if (userRole) {
+                await prisma.user_Role.delete({
                     where: {
-                        user_id: user_id,
-                        event_id: event_id
-                    }
-                }
-            )
+                        id: userRole.id,
+                    },
+                });
+            }
 
             return res.status(200).json({
                 status: true,
@@ -459,6 +465,6 @@ exports.removeUserRoleByEventId = async (req, res) => {
         });
     } catch (e) {
         console.error(e);
-        return res.status(400).json({message: e.message});
+        return res.status(500).json({message: e.message});
     }
 };
