@@ -1,5 +1,4 @@
 const fs = require("fs");
-const supabase = require('../services/supabaseClient');
 
 const uploadToSupabase = async (filePath, mimetype, targetPath) => {
   const file = fs.readFileSync(filePath);
@@ -26,7 +25,11 @@ const uploadToSupabase = async (filePath, mimetype, targetPath) => {
 exports.uploadProfileImage = async (req, res) => {
   try {
     const fileName = `profile-images/${Date.now()}-${req.file.originalname}`;
-    const url = await uploadToSupabase(req.file.path, req.file.mimetype, fileName);
+    const url = await uploadToSupabase(
+      req.file.path,
+      req.file.mimetype,
+      fileName
+    );
     res.json({ url });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -37,7 +40,11 @@ exports.uploadProfileImage = async (req, res) => {
 exports.uploadEventImage = async (req, res) => {
   try {
     const fileName = `event-images/${Date.now()}-${req.file.originalname}`;
-    const url = await uploadToSupabase(req.file.path, req.file.mimetype, fileName);
+    const url = await uploadToSupabase(
+      req.file.path,
+      req.file.mimetype,
+      fileName
+    );
     res.json({ url });
   } catch (err) {
     res.status(500).json({ error: err.message });

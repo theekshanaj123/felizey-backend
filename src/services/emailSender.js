@@ -19,21 +19,18 @@ async function sendEmail(to, subject, message) {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_PASSWORD,
     },
-    connectionTimeout: 30000, // 30 seconds
-    socketTimeout: 30000,    // 30 seconds
-    greetingTimeout: 30000,  // 30 seconds
     logger: true,
     debug: true,
     tls: {
-      rejectUnauthorized: false 
-    }
+      rejectUnauthorized: false,
+    },
   });
 
   const mailOptions = {
     from: process.env.GMAIL_USER,
     to: to,
     subject: subject,
-    text: message || "This is a test email sent from Node.js using Gmail SMTP!",
+    html: message,
   };
 
   try {
@@ -46,15 +43,16 @@ async function sendEmail(to, subject, message) {
     return { status: true, message: "Email Sent", info: info.response };
   } catch (error) {
     console.error("Error sending email:", error);
-    
+
     // More specific error handling
     let errorMessage = error.message;
-    if (error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT') {
+    if (error.code === "ETIMEDOUT" || error.code === "ESOCKETTIMEDOUT") {
       errorMessage = "Connection timed out. Please try again later.";
-    } else if (error.code === 'EAUTH') {
-      errorMessage = "Authentication failed. Please check your email credentials.";
+    } else if (error.code === "EAUTH") {
+      errorMessage =
+        "Authentication failed. Please check your email credentials.";
     }
-    
+
     return { error: true, message: errorMessage, details: error };
   }
 }

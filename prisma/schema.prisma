@@ -8,21 +8,24 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  firstName   String
-  lastName    String?
-  role        String?
-  created_at  DateTime @default(now())
-  avatar_url  String?
-  email       String   @unique
-  password    String?
-  verified    Boolean  @default(false)
-  phoneNumber String?
-  bio         String?
-  isPrimium   Boolean  @default(false)
-  country     String?
-  instagram   String?
-  tiktok      String?
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String?
+  role          String?
+  created_at    DateTime @default(now())
+  avatar_url    String?
+  email         String   @unique
+  password      String?
+  verified      Boolean  @default(false)
+  phoneNumber   String?
+  bio           String?
+  isPrimium     Boolean  @default(false)
+  country       String?
+  instagram     String?
+  tiktok        String?
+  vCode         String?
+  firebaseToken String?
+  status        String   @default("deactive")
 
   events   Event[]
   favorite Favorite[]
@@ -39,6 +42,8 @@ model User {
   User_Assigner User_Role[] @relation("assigner")
 
   User_Role User_Role[] @relation("user")
+
+  Apple_Login Apple_Login[]
 }
 
 model User_Role {
@@ -47,6 +52,7 @@ model User_Role {
   assigned_by String
   role        String
   event_id    String
+  status      String   @default("pending")
   created_at  DateTime @default(now())
 
   event    Event @relation(fields: [event_id], references: [id])
@@ -101,6 +107,7 @@ model Event {
   event_privacy     String?
   accessibility     Json?
   view_count        Int?
+  status            String   @default("active")
   created_at        DateTime @default(now())
 
   user     User       @relation(fields: [user_id], references: [id])
@@ -173,6 +180,18 @@ model User_View_Count {
 model Google_Login {
   id        String @id @default(uuid())
   googleId  String
+  user_id   String
+  email     String @unique
+  givenName String
+  name      String
+  photo     String
+
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model Apple_Login {
+  id        String @id @default(uuid())
+  appleId   String
   user_id   String
   email     String @unique
   givenName String

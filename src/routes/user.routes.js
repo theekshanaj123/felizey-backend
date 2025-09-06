@@ -15,7 +15,9 @@ router.get("/getAllRolesByEventId/:eventId", authenticateToken, getAllRoleByEven
 router.get("/getUserRolls", authenticateToken, getUserRolls);
 router.post("/updateEmail", authenticateToken, updateEmail);
 router.post("/updateUserById", authenticateToken, updateUser);
-router.post("/addNewroll", authenticateToken, addNewRole);
+router.post("/addNewRole", authenticateToken, addNewRole);
+router.post("/acceptRole", authenticateToken, acceptRoll);
+router.post("/declineRole", authenticateToken, declineRoll);
 router.post("/getUserRoleByEventId", authenticateToken, getUserRoleByEventId);
 router.post("/deleteUserRoleByEvent", authenticateToken, removeUserRoleByEventId);
 

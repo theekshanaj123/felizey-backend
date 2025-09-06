@@ -1,4 +1,5 @@
 const express = require("express");
+const admin = require("firebase-admin");
 const app = express();
 const http = require("http");
 const { Server } = require("socket.io");
@@ -12,8 +13,8 @@ const uploadRoutes = require("./routes/upload.routes");
 const paymentRoutes = require("./routes/order.routes");
 const ticketRoutes = require("./routes/ticket.routes");
 const memberRoutes = require("./routes/member.routes");
-const cronRoutes = require("./routes/cron.routes");
 const organizerRoutes = require("./routes/organizer.routes");
+const notificationsRoutes = require("./routes/notification.routes");
 
 const eventSocketHandler = require("./socketHandlers/eventSocket");
 
@@ -22,11 +23,16 @@ const io = new Server(server, {
   cors: { origin: "*" },
 });
 
-const cors = require('cors');
+const cors = require("cors");
 
 require("dotenv").config();
 
 app.set("trust proxy", true);
+
+const serviceAccount = require("./serviceAccountKey.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 app.use(cors());
 app.use(express.json());
@@ -40,20 +46,10 @@ app.use("/api/order", paymentRoutes);
 app.use("/api/ticket", ticketRoutes);
 app.use("/api/member", memberRoutes);
 app.use("/api/organizer", organizerRoutes);
-app.use("/api/cron", cronRoutes);
+app.use("/api/notification", notificationsRoutes);
 
 app.get("/api", (req, res) => {
   res.send("api working..");
-});
-
-// Handle GET /
-app.get('/', (req, res) => {
-  res.json({ status: 'OK', method: 'GET' });
-});
-
-// Handle POST /
-app.post('/', (req, res) => {
-  res.json({ status: 'Created', data: req.body });
 });
 
 // Socket.io connection
@@ -65,7 +61,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
-  })
+  });
 });
 
 const PORT = process.env.PORT;

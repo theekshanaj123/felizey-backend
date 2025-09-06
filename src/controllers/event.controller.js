@@ -343,9 +343,9 @@ exports.deleteEvent = async (req, res) => {
     }
 
     const sendMail = await sendEmail(
-        process.env.GMAIL_USER,
-        "Event Delete",
-        `${event.title} was Deleted by ${user.firstName} ${user.lastName}`
+      process.env.GMAIL_USER,
+      "Event Delete",
+      `${event.title} was Deleted by ${user.firstName} ${user.lastName}`
     );
 
     if (sendMail.error) {
@@ -1466,7 +1466,9 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
 
         if (!eventData) continue;
 
-        const existingEventIndex = events.findIndex(e => e.id === eventData.id);
+        const existingEventIndex = events.findIndex(
+          (e) => e.id === eventData.id
+        );
 
         const ticketData = ord.categories;
 
@@ -1497,6 +1499,42 @@ exports.fetchAllEventByUserTicket = async (req, res) => {
         message: "Orders Not Found.",
       });
     }
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+exports.updateEventStatus = async (req, res) => {
+  try {
+    const { eventId } = req.body;
+    const userId = req.user.id;
+
+    if (!eventId) {
+      return res.status(400).json({ message: "Event ID is required." });
+    }
+    const event = await prisma.event.findFirst({
+      where: { id: eventId },
+    });
+    if (!event) {
+      return res.status(404).json({ message: "Event Not Found." });
+    }
+    if (event.user_id !== userId) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to update this event." });
+    }
+    const updatedEvent = await prisma.event.update({
+      where: { id: eventId },
+      data: { status: event.status === "active" ? "deactive" : "active" },
+    });
+
+    return res.status(200).json({
+      status: true,
+      message: "Event status updated successfully.",
+      data: updatedEvent,
+    });
   } catch (e) {
     return res.status(500).json({
       message: e.message,

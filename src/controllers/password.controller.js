@@ -14,17 +14,7 @@ exports.sendPasswordResetEmail = async (req, res) => {
       return res.status(400).json({ message: "User Not Found." });
     }
 
-    // const { error } = await supabase.auth.resetPasswordForEmail(req.user.email);
-
-    // if (error) {
-    //   return res.status(400).json({ message: error.message });
-    // }
-
-    const sendMail = await sendEmail(
-      email,
-      "Change of Password",
-      email
-    );
+    const sendMail = await sendEmail(email, "Change of Password", email);
 
     if (sendMail.error) {
       return res.status(400).json({ message: sendMail.message });

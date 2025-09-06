@@ -1,19 +1,38 @@
 const prisma = require("../config/db");
 exports.getOrders = async (req, res) => {
-    try {
+  try {
+    const order = await prisma.order.findMany();
 
-        const order = await prisma.order.findMany();
+    return res.status(200).json({
+      status: true,
+      order: order,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
 
-        return res.status(200).json(
-            {
-                status: true,
-                order: order
-            }
-        );
+exports.getOrdersByOrganizer = async (req, res) => {
+  try {
+    const organizerId = req.user.id;
 
-    } catch (e) {
-        return res.status(500).json({
-            message: e.message
-        });
-    }
-}
+    const order = await prisma.order.findMany({
+      where: {
+        event: {
+          user_id: organizerId,
+        },
+      },
+    });
+
+    return res.status(200).json({
+      status: true,
+      order: order,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
