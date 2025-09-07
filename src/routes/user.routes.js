@@ -15,6 +15,7 @@ const {
   getUserRolls,
   acceptRoll,
   declineRoll,
+  changeUserStatus,
 } = require("../controllers/user.controller");
 
 router.get("/updateEmailSend", authenticateToken, updateUserEmailSend);
@@ -34,5 +35,6 @@ router.post(
   authenticateToken,
   removeUserRoleByEventId
 );
+router.post("/changeUserStatus", authenticateToken, changeUserStatus);
 
 module.exports = router;
