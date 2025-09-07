@@ -1,9 +1,10 @@
 const prisma = require("../config/db");
 
 const admin = require("firebase-admin");
-const messaging = admin.messaging();
 
 exports.pushNotification = async (req, res) => {
+  const messaging = admin.messaging();
+
   try {
     const userEmail = req.user.email;
 

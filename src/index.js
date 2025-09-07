@@ -18,6 +18,8 @@ const notificationsRoutes = require("./routes/notification.routes");
 
 const eventSocketHandler = require("./socketHandlers/eventSocket");
 
+const serviceAccount = require("../serviceAccountKey.json");
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" },
@@ -29,7 +31,6 @@ require("dotenv").config();
 
 app.set("trust proxy", true);
 
-const serviceAccount = require("../serviceAccountKey.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
