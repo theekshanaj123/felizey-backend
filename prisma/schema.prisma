@@ -44,6 +44,8 @@ model User {
   User_Role User_Role[] @relation("user")
 
   Apple_Login Apple_Login[]
+
+  Organizer_Details Organizer_Details[]
 }
 
 model User_Role {
@@ -222,5 +224,9 @@ model Organizer_Details {
   email          String
   bank_code      String
   branch_code    String
+  user_id        String
+  status         String?  @default("active")
   created_at     DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
 }

@@ -460,3 +460,127 @@ exports.googleLogin = async (req, res) => {
     });
   }
 };
+
+exports.appleLogin = async (req, res) => {
+  try {
+    if (!req.body) {
+      return res.status(500).json({
+        message: `Somthing went wrong`,
+      });
+    }
+
+    const { appleId, email, givenName, name, photo } = req.body;
+
+    const requiredData = ["appleId", "email", "givenName", "name", "photo"];
+
+    for (const field of requiredData) {
+      if (
+        req.body[field] === undefined ||
+        req.body[field] === null ||
+        req.body[field] === ""
+      ) {
+        return res.status(500).json({
+          message: `${field} is required`,
+        });
+      }
+    }
+
+    const appleUserExist = await prisma.apple_Login.findUnique({
+      where: { email: email },
+    });
+
+    if (!appleUserExist) {
+      const user = await prisma.user.findUnique({ where: { email: email } });
+
+      if (!user) {
+        const createUser = await prisma.user.create({
+          data: {
+            firstName: givenName,
+            email: email,
+            avatar_url: photo,
+          },
+        });
+
+        const createappleUser = await prisma.apple_Login.create({
+          data: {
+            appleId: appleId,
+            user: {
+              connect: {
+                id: createUser.id,
+              },
+            },
+            email: email,
+            givenName: givenName,
+            name: name,
+            photo: photo,
+          },
+        });
+
+        const token = jwt.sign(
+          {
+            id: createUser.id,
+            email: createUser.email,
+          },
+          process.env.JWT_SECRET
+        );
+
+        return res.status(200).json({
+          status: true,
+          message: "Success",
+          user: sanitizeUser(createUser),
+          token: token,
+        });
+      }
+
+      return res.status(500).json({
+        message: "Email Already Registered.",
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: email } });
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Login successful",
+      token: token,
+      user: sanitizeUser(user),
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+};
+
+exports.saveNotifyTocken = async (req, res) => {
+  try {
+    const { token, email } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: "Token is required" });
+    }
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await prisma.user.update({
+      where: { email: email },
+      data: { firebaseToken: token },
+    });
+    return res.status(200).json({
+      message: "Token saved successfully",
+      user: sanitizeUser(user),
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
