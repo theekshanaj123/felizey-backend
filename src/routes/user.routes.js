@@ -13,6 +13,8 @@ const {
   getAllRoleByEventId,
   removeUserRoleByEventId,
   getUserRolls,
+  acceptRoll,
+  declineRoll,
 } = require("../controllers/user.controller");
 
 router.get("/updateEmailSend", authenticateToken, updateUserEmailSend);
