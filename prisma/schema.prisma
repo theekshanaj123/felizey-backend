@@ -109,7 +109,7 @@ model Event {
   event_privacy     String?
   accessibility     Json?
   view_count        Int?
-  status            String   @default("active")
+  status            String?  @default("active")
   created_at        DateTime @default(now())
 
   user     User       @relation(fields: [user_id], references: [id])
