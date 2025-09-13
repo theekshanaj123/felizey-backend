@@ -19,7 +19,7 @@ const {
 } = require("../controllers/user.controller");
 
 router.get("/updateEmailSend", authenticateToken, updateUserEmailSend);
-router.get("/getUserById", authenticateToken, getUser);
+router.get("/getUserById", getUser);
 router.get("/getUser", authenticateToken, getUserByToken);
 router.get("/deleteUser", authenticateToken, deleteUserById);
 router.get("/getAllRolesByEventId/:eventId", getAllRoleByEventId);
