@@ -1603,6 +1603,7 @@ exports.fetchSellingTicketsCountByCategory = async (req, res) => {
             ticket: {
               type: cate?.type,
             },
+            status: "Paid",
           },
         });
 
