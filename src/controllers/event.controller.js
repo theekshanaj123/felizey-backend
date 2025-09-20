@@ -1234,8 +1234,7 @@ exports.fetchTotalEarning = async (req, res) => {
       prisma.$queryRaw`
                 SELECT SUM(NULLIF(total_amount, '')::NUMERIC) AS total
                 FROM "Order"
-                WHERE user_id = ${userId}
-                  AND event_id = ${eventId}
+                WHERE event_id = ${eventId}
                   AND created_at BETWEEN ${todayStart} AND ${todayEnd}
             `,
 
@@ -1243,8 +1242,7 @@ exports.fetchTotalEarning = async (req, res) => {
       prisma.$queryRaw`
                 SELECT SUM(NULLIF(total_amount, '')::NUMERIC) AS total
                 FROM "Order"
-                WHERE user_id = ${userId}
-                  AND event_id = ${eventId}
+                WHERE  event_id = ${eventId}
                   AND created_at >= ${weekStart}
             `,
 
@@ -1252,8 +1250,7 @@ exports.fetchTotalEarning = async (req, res) => {
       prisma.$queryRaw`
                 SELECT SUM(NULLIF(total_amount, '')::NUMERIC) AS total
                 FROM "Order"
-                WHERE user_id = ${userId}
-                  AND event_id = ${eventId}
+                WHERE event_id = ${eventId}
                   AND created_at >= ${monthStart}
             `,
     ]);
@@ -1486,7 +1483,6 @@ exports.fetchTotalCount = async (req, res) => {
       prisma.order_Item.aggregate({
         _count: true,
         where: {
-          user_id: userId,
           event_id: eventId,
           status: "Paid",
         },
