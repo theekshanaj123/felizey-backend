@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -198,7 +199,6 @@ model Apple_Login {
   email     String @unique
   givenName String
   name      String
-  photo     String
 
   user User @relation(fields: [user_id], references: [id])
 }

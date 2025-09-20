@@ -256,9 +256,17 @@ a[x-apple-data-detectors],
       return res.status(400).json({ message: sendMail.message });
     }
 
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      process.env.JWT_SECRET
+    );
+
     return res.status(200).json({
       message: "User created",
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, token: token },
     });
   } catch (error) {
     console.error(error);
@@ -469,9 +477,9 @@ exports.appleLogin = async (req, res) => {
       });
     }
 
-    const { appleId, email, givenName, name, photo } = req.body;
+    const { appleId, email, givenName, name } = req.body;
 
-    const requiredData = ["appleId", "email", "givenName", "name", "photo"];
+    const requiredData = ["appleId", "email", "givenName", "name"];
 
     for (const field of requiredData) {
       if (
@@ -497,7 +505,6 @@ exports.appleLogin = async (req, res) => {
           data: {
             firstName: givenName,
             email: email,
-            avatar_url: photo,
           },
         });
 
@@ -512,7 +519,6 @@ exports.appleLogin = async (req, res) => {
             email: email,
             givenName: givenName,
             name: name,
-            photo: photo,
           },
         });
 

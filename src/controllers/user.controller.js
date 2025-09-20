@@ -191,20 +191,20 @@ exports.getUserByToken = async (req, res) => {
 
 exports.deleteUserById = async (req, res) => {
   try {
-    // const {id} = req.query;
-    //
-    // if (!id) {
-    //     return res.status(500).json({
-    //         message: "User Id Required.",
-    //     });
-    // }
-    //
-    // await prisma.user.delete({where: {id: id}});
+    const { id } = req.query;
+
+    if (!id) {
+      return res.status(500).json({
+        message: "User Id Required.",
+      });
+    }
+
+    await prisma.user.delete({ where: { id: id } });
 
     return res.status(200).json({
       status: true,
-      // message : "User Deleted.",
-      message: "Under Maintaining. Service Coming Soon.",
+      message: "User Deleted.",
+      // message: "Under Maintaining. Service Coming Soon.",
     });
   } catch (e) {
     console.error(e);
