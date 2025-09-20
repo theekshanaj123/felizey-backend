@@ -27,7 +27,7 @@ async function filterEvent(toCurrency, event) {
           },
         });
 
-        const originalPrice = parsePrice(category.price);
+        const originalPrice = parseFloat(category.price);
 
         try {
           const result = await manageCurrency.convertEventResCurrency(
@@ -45,7 +45,7 @@ async function filterEvent(toCurrency, event) {
             price: result.convertedAmount,
             original_currency: category?.currency || "USD",
             currency: result.to,
-            rate: result.rate,
+            // rate: result.rate,
           };
         } catch (conversionError) {
           console.error(
