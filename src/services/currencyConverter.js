@@ -35,7 +35,7 @@ const convertEventResCurrency = async (toCurrency, fromCurrency, price) => {
       from: fromCurrency,
       to: toCurrency,
       originalAmount: price,
-      //   convertedAmount: convertedAmount.toFixed(2),
+      convertedAmount: price.toFixed(2),
       //   rate: rates[toCurrency].toFixed(6),
     };
   } catch (error) {
